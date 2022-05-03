@@ -1,0 +1,403 @@
+<!-- Page enables users to view to_consume media. Page also allows for the filtering of media
+allowing users to filter by type, length and tags. -->
+
+{% extends 'base.html' %}
+{% block content %}
+<section class="media_window">
+    <section class="media_grid">
+            {% for media in to_consume["media"] %}
+                <div class="mediaDisplay" id="display_{{ media['media_id'] }}">
+                    <div class="TitAutLen">
+                        <h5>{{ media["title"] }}</h5>                        
+                        {% if media["type"] == "book" %}
+                        <hr style="margin: 0%;">
+                            <h6>Author(s):</h6>
+                            {% for author in media["author"] %}
+                            {{author}}<br>
+                            {% endfor %}
+                        {% endif %}
+                        <hr style="margin: 0%;">
+
+                        {% if media["type"] == "audiobook" %} 
+                            <hr style="margin: 0%;">
+                            <h6>Author(s):</h6>
+                            {% for author in media["author"] %}
+                                {{author}}<br>
+                            {% endfor %}
+
+                            <hr style="margin: 0%;">
+                            <h6>Narrators:</h6>
+                            {% for narrator in media["narrators"] %}
+                                {{ narrator }}<br>
+                            {% endfor %}
+                        {% endif %}
+                        
+                        {% if media["type"] == "movie" %} 
+                        <h6>Director:</h6>
+                            <p>{{media["director"]}}</p>
+                        <hr style="margin: 0%;">
+                            <h6>Actors:</h6>
+                            {% for actor in media["actors"] %}
+                                {{ actor }}<br>
+                            {% endfor %}
+                        {% endif %}
+                        
+                        {% if media["type"] == "video_game" %}
+                            <h6>Developer:</h6>
+                                <p>{{media["developer"]}}</p>
+                            <hr style="margin: 0%;">
+
+                            <h6>Genres:</h6>
+                            {% for genre in media["genre"] %}
+                                {{genre}}<br>
+                            {% endfor %}
+                        {% endif %}
+
+                        {% if media["type"] == "podcast" %}
+
+                        <h6>Presentors:</h6>
+                            {% for presentor in media["presentor"] %}
+                                {{presentor}}<br>
+                            {% endfor %}
+                        <hr style="margin: 0%;">
+
+                        <h6>Genres:</h6>
+                            {% for genre in media["genre"] %}
+                                {{genre}}<br>
+                            {% endfor %}
+                        {% endif %}
+
+                        {% if media["type"] == "music" %}
+                            <h6>Artist(s):</h6>
+                            {% for artist in media["artist"] %}
+                                {{ artist }} <br>
+                            {% endfor %}
+                            <hr style="margin: 0%;">
+                        {% endif %}
+                        <hr style="margin: 0%;">
+                        {% if media["type"] == "video_game" or media["type"] == "podcast" %}
+                        {% else %}
+                        <h6>Length:</h6>
+                        {% if media["type"] == "book" %}
+                            <p>{{media["length"]}} Pages</p>
+                        {% else %}
+                            <p>{{media["length"]}}</p>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                    <div class="description">
+                        <h5>Description:</h5>
+
+                        <div class="desc_content">
+                            {{ media["description"] }}
+                        </div>
+                        <div class="tagmoredit">
+                            <section class="tagsDisp">
+                                Tags:
+                                {% for t in media["tags"] %}
+                                    {{t}};
+                                {% endfor %}
+                            </section>
+                            <hr style="margin: 0%;">
+                            <div class="showMoreEdit">
+                                <a href="{{ url_for('consumption_interaction.view_specific_media',media_folder='to_consume', media_id=media['media_id']) }}"> <button class="btn btn-info">Show More</button> </a>
+                                <a href="{{ url_for('consumption_interaction.edit_media',media_folder='to_consume', media_id=media['media_id']) }}"><button class="btn btn-warning" id="post_button" type="button" name="button">Edit</button></a> 
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        <h4 class="endResults">[ End of Results! ]</h4>
+    </section>
+    <form action="" method="POST" class="filter_options">
+        <h3>Filter Media</h3>
+        <p style="margin-bottom: 0vh;">Media Type</p>
+
+        <div id="media_type_filter">
+            
+                {% if "book" in media_types %}
+                <div>
+                    <input class="form-check-input" type="checkbox" id="book" name="book" value="book">
+                    <label for="book">Books</label>
+                </div>
+                {% endif %}
+            
+                {% if "movie" in media_types %}
+                <div>
+                    <input class="form-check-input" type="checkbox" id="movie" name="movie" value="movie">
+                    <label for="movie">Movies</label>
+                </div>
+                {% endif %}
+            
+            
+                {% if "audiobook" in media_types %}
+                <div>
+                    <input class="form-check-input" type="checkbox" id="audiobook" name="audiobook" value="audiobook">
+                    <label for="audiobook">Audiobooks</label>
+                </div>
+                {% endif %}
+            
+            
+                {% if "video_game" in media_types %}
+                <div>
+                    <input class="form-check-input" type="checkbox" id="video_game" name="video_game" value="video_game">
+                    <label for="video_game">Video Games</label>
+                </div>
+                {% endif %}
+            
+            
+                {% if "podcast" in media_types %}
+                <div>
+                    <input class="form-check-input" type="checkbox" id="podcast" name="podcast" value="podcast">
+                    <label for="podcast">Podcasts</label>
+                </div>
+                {% endif %}
+             
+                
+                {% if "music" in media_types %}
+                <div> 
+                    <input class="form-check-input" type="checkbox" id="music" name="music" value="music">
+                    <label for="music">Music</label>
+                </div>
+                {% endif %}
+            
+        </div>
+        
+        <div id="length_range">
+            
+            <p>Filter by Pages</p>
+            <div class="filter_pages">
+                <input type="number" id="min_page_input" name="min_page_input" min="0" value="0">
+                <label for="min_page_input">&nbsp;Min</label>
+                <p>&nbsp;<-->&nbsp; </p>
+                <input type="number" id="max_page_input" name="max_page_input" max="0" value="0">
+                <label for="max_page_input">&nbsp;Max</label>
+            </div>
+
+
+            <p>Filter by Duration (Hours)</p>
+            <div class="filter_duration">
+                <input type="number" id="min_hours_input" name="min_hours_input" min="0" value="0">
+                <label for="min_hours_input">&nbsp;Min</label>
+                <p>&nbsp;<-->&nbsp; </p>
+                <input type="number" id="max_hours_input" name="max_hours_input" min="0" value="0">
+                <label for="max_hours_input">&nbsp;Max </label>
+            </div>
+        </div>
+
+        <div id="filter_tag">
+            <p>Filter by Tag</p>
+            <section id="tagSection">
+                <div id="tagForms">
+
+                </div>
+            </section>
+        </div>
+        <input class="btn btn-success" id="filterSubmitButton" type="button" onclick="submitFilter()" value="Submit Filter">
+        <input class="btn btn-danger" id="resetButton" type="button" onclick="resetPage()" value="Reset" disabled>
+
+    </form>
+</section>
+<br>
+
+<input id="mediaTypeStore" value="{{media_types}}" hidden="true"/>
+<input id="TagStore" value="{{tags}}" hidden="true"/>
+<input id="mediaStore" value="{{ to_consume['media'] }}" hidden="true"/>
+
+{% endblock %}
+{% block scripts %}
+
+<script>
+var filterSubmittedStatus = false;
+var media_types = GetMediaTypes();
+var filterTypeSelections = []
+var filterPageLength = []
+var filterDurLength = []
+var filterTagSelection = ""
+var user_tags = getTags()
+var media_data = getMedia()
+var valid_media = []
+var tag_gen = 0
+
+GenTagsForm()
+
+
+function getTags() {
+         tags = document.getElementById("TagStore").value
+         document.getElementById("TagStore").remove()
+         let a = tags.replace(/'/g, '"')
+         return JSON.parse(a)
+    }
+function GetMediaTypes() {
+         media_types_store = document.getElementById("mediaTypeStore").value
+         document.getElementById("mediaTypeStore").remove()
+         let a = media_types_store.replace(/'/g, '"')
+         return JSON.parse(a)
+    }
+
+function getMedia() {
+    media = document.getElementById("mediaStore").value
+    document.getElementById("mediaStore").remove()
+    let a = media.replace(/'/g,'"')
+    let b = a.replace(/True/g,'true')
+    let c = b.replace(/False/g,'false')
+    let d = c.replace(/None/g,'null')
+    return JSON.parse(d)
+}
+
+function submitFilter() {
+    if (filterSubmittedStatus == false) {
+        filterSubmittedStatus == true;
+        document.getElementById("resetButton").removeAttribute("disabled");
+        document.getElementById("filterSubmitButton").setAttribute("disabled", true);
+    }
+    getFilterSettings()
+    identifyValidItems()
+    hideInvalidItems()
+}
+
+function getFilterSettings() {
+    // Get Media Type Checked
+    for (let i = 0; i < media_types.length; i++) {
+            if (document.getElementById(media_types[i]).checked) {
+                filterTypeSelections.push(media_types[i])
+            }  
+        }
+    
+    var min_pages = document.getElementById("min_page_input").value
+    var max_pages = document.getElementById("max_page_input").value
+    filterPageLength.push(parseInt(min_pages))
+    filterPageLength.push(parseInt(max_pages))
+
+    var min_dur = document.getElementById("min_hours_input").value
+    var max_dur = document.getElementById("max_hours_input").value
+    filterDurLength.push(parseInt(min_dur) * 60)
+    filterDurLength.push(parseInt(max_dur) * 60)
+
+    var tag_filter = document.getElementById("tag").value
+    if (typeof tag_filter !== 'undefined') {
+        filterTagSelection = tag_filter
+    }
+}
+
+function identifyValidItems() {
+    temp_media_1 = []
+    temp_media_2 = []
+    temp_media_3 = []
+    for (let i = 0; i < media_data.length; i++) {
+        if (filterTypeSelections.length > 0) {
+            for (let j = 0; j < filterTypeSelections.length; j++) {
+                if (media_data[i].type == filterTypeSelections[j]) {
+                    temp_media_1.push(media_data[i])
+                }
+            }
+        } else {
+            temp_media_1 = media_data
+        }
+    }
+
+    for (let i = 0; i < temp_media_1.length; i++) {
+        if ((filterPageLength[1] > 0) || (filterDurLength[1] > 0)) {
+
+            if (filterPageLength[1] > 0) {
+                if (temp_media_1[i].type == "book") {
+                    if (filterPageLength[0] <= parseInt(temp_media_1[i].length) && parseInt(temp_media_1[i].length) <= filterPageLength[1]) {
+                        temp_media_2.push(temp_media_1[i])
+                    } 
+                }
+            } 
+            
+            if (filterDurLength[1] > 0) {
+                if (String(temp_media_1[i].length).includes("h")) {
+                    
+                    media_dur = temp_media_1[i].length.split("h")
+                    media_dur[0] = parseInt(media_dur[0])
+                    media_dur[1] = parseInt(media_dur[1].replace(/m/g,' '))
+                    media_dur_total = (media_dur[0] * 60) + media_dur[1]
+                    if (filterDurLength[0] <= media_dur_total && media_dur_total <= filterDurLength[1]) {
+                        temp_media_2.push(temp_media_1[i])
+                    }
+                }
+            }
+        } else {
+            temp_media_2.push(temp_media_1[i])
+        }
+    }
+
+    for (let i = 0; i < temp_media_2.length; i++) {
+        valid_tag = false
+        if (filterTagSelection != "") {
+            for (let j = 0 ; j < user_tags.length; j++) {
+                if (filterTagSelection == user_tags[j]) {
+                    valid_tag = true 
+                    break
+                } 
+            }
+            for (let j = 0; j < temp_media_2[i].tags.length; j++) {
+                if (filterTagSelection == temp_media_2[i].tags[j]) {
+                    temp_media_3.push(temp_media_2[i])
+                }
+            }
+        } else {
+            temp_media_3.push(temp_media_2[i])
+        }
+    }
+    valid_media = temp_media_3
+}
+
+function hideInvalidItems() {
+    for (let i = 0; i < media_data.length; i++) {
+        if (valid_media.includes(media_data[i])) {
+            // Do nothing
+        } else {
+            document.getElementById("display_" + String(media_data[i].media_id)).setAttribute("hidden", true)
+        }   
+    }
+}
+
+function resetPage() {
+    for (let i = 0; i < media_data.length; i++) {
+        document.getElementById("display_" + String(media_data[i].media_id)).removeAttribute("hidden")
+        filterSubmittedStatus == false;
+    }
+    filterDurLength.length = 0;
+    filterPageLength.length = 0;
+    filterTypeSelections.length = 0;
+    filterTagSelection.length = 0;
+
+
+    for (let i = 0; i < media_types.length; i++) {
+            if (document.getElementById(media_types[i]).checked) {
+                document.getElementById(media_types[i]).checked = false
+            }  
+        }
+    
+    document.getElementById("min_page_input").value = 0
+    document.getElementById("max_page_input").value = 0
+    document.getElementById("min_hours_input").value = 0
+    document.getElementById("max_hours_input").value = 0
+
+    document.getElementById("tag").value = ""
+
+    document.getElementById("resetButton").setAttribute("disabled", true)
+    document.getElementById("filterSubmitButton").removeAttribute("disabled")
+}
+
+function GenTagsForm() {
+        var container = document.createElement("div")
+        container.innerHTML = '<label for="tag">Tag: &nbsp; </label><input list="ext_tags" name="tag" id="tag"><datalist id="ext_tags"></datalist>'
+        document.getElementById("tagForms").appendChild(container)
+        if (tag_gen < 1) {
+            for (tag in user_tags) {
+                var tag_cont = document.createElement("option")
+                tag_cont.setAttribute("value", user_tags[tag])
+                search = "ext_tags_" + tag_gen.toString() 
+                document.getElementById("ext_tags").appendChild(tag_cont)
+            }
+        }
+        tag_gen += 1
+    }
+
+</script>
+
+{% endblock %}

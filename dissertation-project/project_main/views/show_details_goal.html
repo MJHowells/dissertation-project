@@ -1,0 +1,95 @@
+<!-- Page enables users to view a specific goal and see its details. -->
+
+{% extends 'base.html' %}
+{% block content %}
+
+<section class="view_media">
+    <div class="details_block" >
+        <!-- Container for Title, (Author, actor, director etc) and length/duration -->
+        <h5>Title:</h5>
+                {{ goal["title"] }} <br>
+                <h5>Goal Type(s):</h5>
+                    {{ goal["media_type"]}}<br>
+                    {{ goal["goal_type"]}}
+                <h5>Progress:</h5>
+                    {% if goal["goal_type"] == "num_hours" %}
+                        {{ goal["progress"]["hours"]}}h {{ goal["progress"]["minutes"] }}m / {{ goal["quantity"]["hours"]}}h
+
+                            {% if goal["progress"]["hours"] | int >= goal["quantity"]["hours"] | int %}
+                                <br>Yay! Goal Complete!
+                            {% endif %}
+
+                    {% elif goal["goal_type"] == "num_pages" %}
+
+                        {{ goal["progress"]}} / {{ goal["quantity"]}} Pages
+
+                            {% if goal["progress"] | int >= goal["quantity"] | int %}
+
+                                <br>Yay! Goal Complete!
+
+                            {% endif %}
+
+                    {% elif goal["goal_type"] == "num_books" %}
+
+                        {{ goal["progress"]}} / {{ goal["quantity"]}} Books
+
+                            {% if goal["progress"] | int >= goal["quantity"] | int %}
+
+                                <br>Yay! Goal Complete!
+
+                            {% endif %}
+
+                    {% elif goal["goal_type"] == "num_films" %}
+
+                        {{ goal["progress"]}} / {{ goal["quantity"]}} Films
+
+                            {% if goal["progress"] | int >= goal["quantity"] | int %}
+
+                                <br>Yay! Goal Complete!
+
+                            {% endif %}
+                    
+                    {% elif goal["goal_type"] == "num_games" %}
+
+                        {{ goal["progress"]}} / {{ goal["quantity"]}} Games
+
+                            {% if goal["progress"] | int >= goal["quantity"] | int %}
+
+                                <br>Yay! Goal Complete!
+
+                            {% endif %}
+
+                    {% endif %}
+                    <p>End Date:   {{goal["start_date"]}}</p>
+                    <p>Start Date: {{goal["end_date"]}}</p>
+                    <div class="edit_del_btn" style="margin: auto; display: flex; flex-direction: row; justify-content: space-between;">
+                        <a href="{{ url_for('consumption_interaction.edit_goal', goal_id=goal['goal_id']) }}"><button class="btn btn-warning" style="margin-right: 30px;" id="post_button" type="button" name="button">Edit Goal</button></a>
+                        <a href="{{ url_for('consumption_interaction.archive_goal_action', goal_id=goal['goal_id']) }}"><button class="btn btn-danger" style="margin-left: 30px;" id="post_button" type="button" name="button">Archive Goal</button></a> 
+                        
+                        </div>
+            </div>
+            
+            </div>
+        </div>
+    </div>
+        <div class="desc_events_block" style="padding-left: 1vw;">
+            <div class="desc_content">
+                <h5>Included Media:</h5>
+                    {% for i in goal["media_ids"] %}
+                        {% for j in consumed["media"] %}
+                            {% if i == j["media_id"] %}
+                                <a href="{{ url_for('consumption_interaction.view_specific_media',media_folder='consumed', media_id=j['media_id']) }}">{{j["title"]}}</a> &nbsp;:&nbsp; {{j["length"]}} Pages &nbsp; <br>
+                    
+                                {% for aut in j["author"] %} 
+                                    {{aut}} 
+                                {% endfor %} <br>
+                                &nbsp; &nbsp; &nbsp; Finished: &nbsp; {{j["events"]["events"][0]["date"]}}
+                            {% endif %}
+                        {% endfor %}
+                        <hr style="margin: 0%;">
+                    {% endfor %}
+                </div>
+            
+        </div>
+</section>
+{% endblock %}

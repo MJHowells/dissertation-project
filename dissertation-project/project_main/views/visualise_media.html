@@ -1,0 +1,749 @@
+<!-- Page enables users to view visualisations of their media consumption, allowing them to view 
+the frequncy of media types consumed, the frequncy of consumption statuses, the total count of 
+media items consumed, and the total length of media items consumed. Users may specify which media
+types the visualisatons show data for, and the time frame for data to be included.  -->
+
+{% extends 'base.html' %}
+{% block content %}
+<div class="vis_page">
+    <section class="vis_chart_settings">
+        <div class="vis_media_select">
+            <label for="media_type">Choose Media Type:</label>
+            <select class="form-control" name="media_type" id="media_type" onclick="setConsumptionType()">
+                <option value="all_media">All Media</option>
+                {% for type in user_media_type %}
+                    {% if type == "audiobook" %}
+                        <option value="audiobook">Audiobooks</option>
+                    {% elif type == "book" %}
+                        <option value="book">Books</option>
+                        {% if "audiobook" in user_media_type %}
+                            <option value="book/audiobook">Books & Audiobooks</option>
+                        {% endif %}
+                    {% elif type == "movie" %}
+                        <option value="movies">Movies</option>
+                    {% elif type == "video_game" %}
+                        <option value="video_games">Video Games</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        <div class="vis_consumption_type">
+            <label for="cons_type">Consumption Type</label>
+            <select class="form-control" name="cons_type" id="cons_type">
+                <option value="count">Media Count</option>
+                <option id="length/duration" value="length">Length/Duration</option>
+            </select>
+        </div>
+        <div class="vis_date_select">
+            <label for="start_date">View From: <input class="form-control" type="date" value="2021-01-01" name="start_date" id="start_date"></label>
+            <label for="end_date"> To: <input class="form-control" type="date" value="2021-12-31" name="end_date" id="end_date"></label>   
+        </div>
+        <br>
+        <div class="submit_button">
+            <input class="btn btn-success" type="button" name="submit_vis" id="submit_vis" value="Submit" onclick="submitForm()">
+        </div>
+    </section>
+    <section class="vis_buttons_and_view">
+        <div class="view_vis_nav_buttons">
+            <input class="btn btn-info" type="button" id="pieBtn" onclick="showPie()" value="Consumption Type Frequency">
+            <input class="btn btn-info" type="button" id="pieMediaBtn" onclick="showMediaPie()" value="Media Types">
+            <input class="btn btn-info" type="button" id="barBtn" onclick="showBar()" value="Consumed Media Over Time">
+        </div>
+        <section class="vis_container">
+            <div id="pieChartCont" class="pieChartTab">
+                <canvas id="pieChart">
+                </canvas>
+            </div>
+        
+            <div id="barChartCont" class="barChartTab">
+                <canvas id="barChart">
+                </canvas>
+            </div>
+    
+            <div id="pieChartMediaCont" class="pieChartMediaTab">
+                <canvas id="pieChartMedia">
+                </canvas>
+            </div>
+        </section>
+    </section>
+
+</div>
+
+
+
+
+<input type="text" name="MEDIA_STORE" id="MEDIA_STORE" value="{{media}}" hidden>
+<input type="text" name="MEDIA_STORE_CONS" id="MEDIA_STORE_CONS" value="{{cons_media}}" hidden>
+<input type="text" name="MEDIA_STORE_TO_CONS" id="MEDIA_STORE_TO_CONS" value="{{to_cons_media}}" hidden>
+<input type="text" name="MEDIA_TYPE_STORE" id="MEDIA_TYPE_STORE" value="{{user_media_type}}" hidden>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+<script>
+
+setConsumptionType()
+
+var media_data = getMedia()
+var cons_media = getConsMedia()
+var to_cons_media = getToConsMedia()
+var oldest_date = getOldestDate()
+var newest_date = getNewestDate()
+var user_media_types = getMediaTypes()
+var pageLoad = false
+var currVisType = "pie"
+
+setDateValues()
+
+function getOldestDate() {
+    if (media_data["media"].length > 0) {
+        len = media_data["media"].length
+        return media_data["media"][len-1]["finished"]["date"]        
+    } else {
+        return "01/01/2000"
+    }
+}
+
+function getNewestDate() {
+    if (media_data["media"].length > 0) {
+        return media_data["media"][0]["finished"]["date"]
+    } else {
+        return "30/12/2099"
+    }
+
+}
+
+function getMediaTypes() {
+    media_types_store = document.getElementById("MEDIA_TYPE_STORE").value
+    document.getElementById("MEDIA_TYPE_STORE").remove()
+    let a = media_types_store.replace(/'/g, '"')
+    return JSON.parse(a)
+}
+
+document.getElementById("media_type").addEventListener("click", function() {
+    if (document.getElementById("media_type").value == "all_media" || document.getElementById("media_type").value == "video_games" 
+    || document.getElementById("media_type").value == "book/audiobook") {
+        document.getElementById("length/duration").hidden = true
+    } else {
+        document.getElementById("length/duration").hidden = false
+    }
+}, false);
+
+function setConsumptionType() {
+    if (document.getElementById("media_type").value == "all_media" || document.getElementById("media_type").value == "video_games" || document.getElementById("media_type").value == "book/audiobook") {
+        document.getElementById("length/duration").hidden = true
+        document.getElementById("cons_type").value = "count"
+    } else {
+        document.getElementById("length/duration").hidden = false
+    }
+}
+
+function setDateValues() {
+    if (media_data["media"].length > 0) {
+        document.getElementById("start_date").value = oldest_date
+        document.getElementById("end_date").value = newest_date
+    }
+}
+
+function getMedia() {
+    media = document.getElementById("MEDIA_STORE").value
+    document.getElementById("MEDIA_STORE").remove()
+    let a = media.replace(/'/g, '"')
+    let b = a.replace(/True/g,'true')
+    let c = b.replace(/False/g,'false')
+    let d = c.replace(/None/g,'null')
+    return JSON.parse(d)
+}
+
+function getConsMedia() {
+    media = document.getElementById("MEDIA_STORE_CONS").value
+    document.getElementById("MEDIA_STORE_CONS").remove()
+    let a = media.replace(/'/g, '"')
+    let b = a.replace(/True/g,'true')
+    let c = b.replace(/False/g,'false')
+    let d = c.replace(/None/g,'null')
+    return JSON.parse(d)
+}
+
+function getToConsMedia() {
+    media = document.getElementById("MEDIA_STORE_TO_CONS").value
+    document.getElementById("MEDIA_STORE_TO_CONS").remove()
+    let a = media.replace(/'/g, '"')
+    let b = a.replace(/True/g,'true')
+    let c = b.replace(/False/g,'false')
+    let d = c.replace(/None/g,'null')
+    return JSON.parse(d)
+}
+
+function submitForm() {
+    media_type = document.getElementById("media_type").value
+    consump_type = document.getElementById("cons_type").value
+    start_date = document.getElementById("start_date").value
+    end_date = document.getElementById("end_date").value
+
+    chart.options.title.text = "LOADING..."
+
+    aquireDatasets(media_type, consump_type, start_date, end_date)
+    aquireDatasetsMediaTypes(start_date, end_date)
+
+}
+
+function aquireDatasets(media_type, consump_type, start_date, end_date) {
+    valid_media = getMediaByDates(start_date, end_date, media_data)
+    valid_media = getMediaByType(media_type, valid_media)
+    mediaByMonth = seperateMonths(valid_media)
+
+    new_media_title = []
+    new_media_value = []
+
+    for (var date in mediaByMonth) {
+        tempDate = date.split("-")
+        outputDate = getMonthString(tempDate[1]) + " " + tempDate[0]
+        new_media_title.push(outputDate)
+    }
+
+    if (consump_type == "count") {
+        for (var date in mediaByMonth) { 
+            let count = 0
+            for (let j = 0; j < mediaByMonth[date].length; j++) {
+                count+=1
+            }
+            new_media_value.push(count)
+        }
+    } else if (consump_type == "length") {
+
+        if (media_type == "book") {
+            for (var date in mediaByMonth) { 
+            let count = 0
+            for (let j = 0; j < mediaByMonth[date].length; j++) {
+                count+= parseInt(mediaByMonth[date][j])
+            }
+            new_media_value.push(count)
+        }
+
+        } else {
+            for (var date in mediaByMonth) { 
+            let duration = "0h 0m"
+            for (let j = 0; j < mediaByMonth[date].length; j++) {
+                duration = caluclateDuration(duration, mediaByMonth[date][j])
+            }
+            new_media_value.push(convertDurationToMinutes(duration))
+            }  
+        }
+  
+    }
+    new_media_title = reverseOrder(new_media_title)
+    new_media_value = reverseOrder(new_media_value)
+    updateChart(new_media_title, new_media_value, media_type, consump_type)
+}
+
+function aquireDatasetsMediaTypes(start_date, end_date) {
+    validConsumedMedia = getMediaByDates(start_date, end_date, media_data)
+    validConsumingMedia = getMediaByDates(start_date, end_date, cons_media)
+    valudToConsuminMedia = getMediaByDates(start_date, end_date, to_cons_media)
+
+    data = []
+    label = []
+
+    for (let i = 0; i < user_media_types.length; i++) {
+        if (user_media_types[i] == "book") {
+            count = 0
+            for (let j = 0; j < validConsumedMedia.length; j++) {
+                if (validConsumedMedia[j]["type"] == "book") {
+                    count+=1
+                }
+            }
+            for (let j = 0; j < validConsumingMedia.length; j++) {
+                if (validConsumingMedia[j]["type"] == "book") {
+                    count+=1
+                }
+            }
+            for (let j = 0; j < valudToConsuminMedia.length; j++) {
+                if (valudToConsuminMedia[j]["type"] == "book") {
+                    count+=1
+                }
+            }
+            label.push("Book(s)")
+            data.push(count)
+
+        } else if (user_media_types[i] == "movie") {
+            count = 0
+            for (let j = 0; j < validConsumedMedia.length; j++) {
+                if (validConsumedMedia[j]["type"] == "movie") {
+                    count+=1
+                }
+            }
+            for (let j = 0; j < validConsumingMedia.length; j++) {
+                if (validConsumingMedia[j]["type"] == "movie") {
+                    count+=1
+                }
+            }
+            for (let j = 0; j < valudToConsuminMedia.length; j++) {
+                if (valudToConsuminMedia[j]["type"] == "movie") {
+                    count+=1
+                }
+            }
+            label.push("Movie(s)")
+            data.push(count)
+
+        } else if (user_media_types[i] == "audiobook") {
+            count = 0
+            for (let j = 0; j < validConsumedMedia.length; j++) {
+                if (validConsumedMedia[j]["type"] == "audiobook") {
+                    count+=1
+                }
+            }
+            for (let j = 0; j < validConsumingMedia.length; j++) {
+                if (validConsumingMedia[j]["type"] == "audiobook") {
+                    count+=1
+                }
+            }
+            for (let j = 0; j < valudToConsuminMedia.length; j++) {
+                if (valudToConsuminMedia[j]["type"] == "audiobook") {
+                    count+=1
+                }
+            }
+            label.push("Audiobook(s)")
+            data.push(count)
+        } else if (user_media_types[i] == "video_game") {
+            count = 0
+            for (let j = 0; j < validConsumedMedia.length; j++) {
+                if (validConsumedMedia[j]["type"] == "video_game") {
+                    count+=1
+                }
+            }
+            for (let j = 0; j < validConsumingMedia.length; j++) {
+                if (validConsumingMedia[j]["type"] == "video_game") {
+                    count+=1
+                }
+            }
+            for (let j = 0; j < valudToConsuminMedia.length; j++) {
+                if (valudToConsuminMedia[j]["type"] == "video_game") {
+                    count+=1
+                }
+            }
+            label.push("Video Game(s)")
+            data.push(count)
+        }
+    } 
+
+    updateDoughnut(data, label, start_date, end_date)
+}
+
+function getMediaByDates (start_date, end_date, media_list) {
+    temp_media = []
+    for (let i = 0; i < media_list["media"].length; i++) {
+        sDate = Date.parse(start_date)
+        mDate = Date.parse(media_list["media"][i]["finished"]["date"])
+        eDate = Date.parse(end_date)
+        if (sDate <=  mDate && mDate <= eDate) {
+            temp_media.push(media_list["media"][i])
+        }
+    }
+    return temp_media
+}
+
+function getMediaByType(media_type, valid_media_dates) {
+    output = []
+    for (let i = 0; i < valid_media_dates.length; i++) {
+        if (media_type == "book/audiobook") {
+            if (valid_media_dates[i].type == "book" || valid_media_dates[i].type == "audiobook") {
+                output.push(valid_media_dates[i])
+            }
+        } else if (media_type == "movies") {
+            if (valid_media_dates[i].type == "movie") {
+                output.push(valid_media_dates[i])
+            }
+        } else if (media_type == "video_games") {
+            if (valid_media_dates[i].type == "video_game") {
+                output.push(valid_media_dates[i])
+            }
+        } else if (media_type == "book") {
+            if (valid_media_dates[i].type == "book") {
+                output.push(valid_media_dates[i])
+            }
+        } else if (media_type == "audiobook") {
+            if (valid_media_dates[i].type == "audiobook") {
+                output.push(valid_media_dates[i])
+            }
+        } else if (media_type == "all_media") {
+            return valid_media_dates
+        } 
+    }
+    return output
+}
+
+function getMonthString(month) {
+    switch (month) {
+        case "01": 
+            return "January"
+        case "02":
+            return "Febuary"
+        case "03":
+            return "March"
+        case "04":
+            return "April"
+        case "04":
+            return "May"
+        case "05":
+            return "June"
+        case "07":
+            return "July"
+        case "08":
+            return "August"
+        case "09":
+            return "September"
+        case "10":
+            return "October"
+        case "11":
+            return "November"
+        case "12":
+            return "December"
+
+    }
+}
+
+function seperateMonths(validated_media) {
+    dates = []
+    for (let i = 0; i < validated_media.length; i++) {
+        splitDate = validated_media[i]["finished"]["date"].split("-")
+        newDate = splitDate[0] + "-" + splitDate[1]
+        if (newDate in dates) {
+            dates[newDate].push(validated_media[i]["length"])
+        } else {
+            temp_array = []
+            temp_array.push(validated_media[i]["length"])
+            dates[newDate] = temp_array
+        }
+    }
+    return dates
+}
+
+function caluclateDuration(total_time, media_time) {
+    tempTimeM = media_time.split("h")
+    let mHour = parseInt(tempTimeM[0])
+    let mMinute = parseInt(tempTimeM[1].replace("m", " "))
+
+    tempTimeT = total_time.split("h")
+    let tHour = parseInt(tempTimeT[0])
+    let tMinute = parseInt(tempTimeT[1].replace("m", " "))
+
+    hour = mHour + tHour
+    minutes = mMinute + tMinute
+    if (minutes >= 60) {
+        hour+=1
+        minutes = minutes % 60
+    }
+
+    return String(hour) + "h " + String(minutes) + "m"
+}
+
+function convertDurationToMinutes(finalDur) {
+    tempTime = finalDur.split("h")
+    hour = parseInt(tempTime[0])
+    minute = parseInt(tempTime[1].replace("m", " "))
+    return (hour * 60) + minute
+}
+
+function updateChart(dataset1, dataset2, media_type, consump_type) { 
+    chart.data.labels = dataset1
+    chart.data.datasets[0].data = dataset2
+    if (consump_type == "length") {
+        if (media_type == "movies" || media_type == "audiobook") {
+            chart.data.datasets[0].label = "Minutes"
+            if (media_type == "movies") {
+                chart.options.title.text = "Minutes of Movies Watched"
+            } else if (media_type == "audiobook") {
+                chart.options.title.text = "Minutes of Audiobooks Listened"
+            }
+        } else if (media_type == "book") {
+            chart.data.datasets[0].label = "Pages"
+            chart.options.title.text = "Number of Pages Read"
+        }   
+    } else if (consump_type == "count") {
+        if (media_type == "movies") {
+            chart.data.datasets[0].label = "Movies"
+            chart.options.title.text = "Number of Movies Watched"
+        } else if (media_type == "audiobook") {
+            chart.data.datasets[0].label = "Audiobooks"
+            chart.options.title.text = "Number of Audiobooks Listened"
+        } else if (media_type == "book") {
+            chart.data.datasets[0].label = "Books"
+            chart.options.title.text = "Number of Books Read"
+        } else if (media_type == "video_games") {
+            chart.data.datasets[0].label = "Videogames"
+            chart.options.title.text = "Number of Videogames Played"
+        } else if (media_type == "all_media") {
+            chart.data.datasets[0].label = "Media Finished"
+            chart.options.title.text = "Number of Various Medias Finished"
+        } else if (media_type == "book/audiobook") {
+            chart.data.datasets[0].label = "Books / Audiobooks"
+            chart.options.title.text = "Number of Books and Audiobooks Finished"
+        }
+    }
+
+
+    chart.update()
+}
+
+function updateDoughnut(data, label, start_date, end_date) {
+    pieChartMedia.data.labels = label
+    pieChartMedia.data.datasets[0].data = data
+
+    pieChartMedia.options.title.text = "Frequncy of Media Types Consumed between " + start_date + " and " + end_date + "!"
+
+    pieChartMedia.update()
+}
+
+function showPie() {
+    currVisType = "pie"
+    document.getElementById("barChartCont").setAttribute("hidden", true)
+    document.getElementById("pieChartCont").removeAttribute("hidden")
+    document.getElementById("pieBtn").setAttribute("disabled", true)
+    document.getElementById("barBtn").removeAttribute("disabled")
+    document.getElementById("pieChartMediaCont").setAttribute("hidden", true)
+    document.getElementById("pieMediaBtn").removeAttribute("disabled")
+
+    document.getElementById("media_type").setAttribute("disabled", true)
+    document.getElementById("cons_type").setAttribute("disabled", true)
+    document.getElementById("start_date").setAttribute("disabled", true)
+    document.getElementById("end_date").setAttribute("disabled", true)
+    document.getElementById("submit_vis").setAttribute("disabled", true)
+}
+
+function showBar() {
+    currVisType = "bar"
+    document.getElementById("pieChartCont").setAttribute("hidden", true)
+    document.getElementById("barChartCont").removeAttribute("hidden")
+    document.getElementById("barBtn").setAttribute("disabled", true)
+    document.getElementById("pieBtn").removeAttribute("disabled")
+    document.getElementById("pieChartMediaCont").setAttribute("hidden", true)
+    document.getElementById("pieMediaBtn").removeAttribute("disabled")
+
+    document.getElementById("media_type").removeAttribute("disabled")
+    document.getElementById("cons_type").removeAttribute("disabled")
+    document.getElementById("start_date").removeAttribute("disabled")
+    document.getElementById("end_date").removeAttribute("disabled")
+    document.getElementById("submit_vis").removeAttribute("disabled")
+}
+
+function showMediaPie() {
+    currVisType = "doughnut"
+    document.getElementById("pieChartMediaCont").removeAttribute("hidden")
+    document.getElementById("pieChartCont").setAttribute("hidden", true)
+    document.getElementById("barChartCont").setAttribute("hidden", true)
+    document.getElementById("pieMediaBtn").setAttribute("disabled", false)
+    document.getElementById("pieBtn").removeAttribute("disabled")
+    document.getElementById("barBtn").removeAttribute("disabled")
+
+    document.getElementById("media_type").setAttribute("disabled", true)
+    document.getElementById("cons_type").setAttribute("disabled", true)
+    document.getElementById("start_date").removeAttribute("disabled")
+    document.getElementById("end_date").removeAttribute("disabled")
+    document.getElementById("submit_vis").removeAttribute("disabled")
+}
+
+function reverseOrder(dataset) {
+    return dataset.reverse()
+}
+// Bar chart
+
+function getPieData() {
+    pieData1 = []
+    pieData1.push(media_data["media"].length)
+    pieData1.push(cons_media["media"].length)
+    pieData1.push(to_cons_media["media"].length)
+    pieData2 = []
+    pieData2.push("Consumed Media")
+    pieData2.push("Consuming Media")
+    pieData2.push("Media To Be Consumed")
+
+    output = []
+    output.push(pieData1)
+    output.push(pieData2)
+    return output
+}
+pieDatasets = getPieData()
+pieData1 = output[0]
+pieData2 = output[1]
+
+function getMediaPieData() {
+    data = []
+    label = []
+    for (let i = 0; i < user_media_types.length; i++) {
+        if (user_media_types[i] == "book") {
+            count = 0
+            label.push("Book")
+            for (let j = 0; j < media_data["media"].length; j++) {
+                if (media_data["media"][j]["type"] == "book") {
+                    count+=1
+                }
+            }
+            for (let j = 0; j < cons_media["media"].length; j++) {
+                if (cons_media["media"][j]["type"] == "book") {
+                    count+=1
+                }
+            }
+            for (let j = 0; j < to_cons_media["media"].length; j++) {
+                if (to_cons_media["media"][j]["type"] == "book") {
+                    count+=1
+                }
+            }
+            data.push(count)
+        } else if (user_media_types[i] == "movie") {
+            count = 0
+            label.push("Movie")
+            for (let j = 0; j < media_data["media"].length; j++) {
+                if (media_data["media"][j]["type"] == "movie") {
+                    count+=1
+                }
+            }
+            for (let j = 0; j < cons_media["media"].length; j++) {
+                if (cons_media["media"][j]["type"] == "movie") {
+                    count+=1
+                }
+            }
+            for (let j = 0; j < to_cons_media["media"].length; j++) {
+                if (to_cons_media["media"][j]["type"] == "movie") {
+                    count+=1
+                }
+            }
+            console.log(count)
+            data.push(count)
+        } else if (user_media_types[i] == "audiobook") {
+            count = 0
+            label.push("Audiobook")
+            for (let j = 0; j < media_data["media"].length; j++) {
+                if (media_data["media"][j]["type"] == "audiobook") {
+                    count+=1
+                }
+            }
+            for (let j = 0; j < cons_media["media"].length; j++) {
+                if (cons_media["media"][j]["type"] == "audiobook") {
+                    count+=1
+                }
+            }
+            for (let j = 0; j < to_cons_media["media"].length; j++) {
+                if (to_cons_media["media"][j]["type"] == "audiobook") {
+                    count+=1
+                }
+            }
+            data.push(count)
+        } else if (user_media_types[i] == "video_game") {
+            count = 0
+            label.push("Video Game")
+            for (let j = 0; j < media_data["media"].length; j++) {
+                if (media_data["media"][j]["type"] == "video_game") {
+                    count+=1
+                }
+            }
+            for (let j = 0; j < cons_media["media"].length; j++) {
+                if (cons_media["media"][j]["type"] == "video_game") {
+                    count+=1
+                }
+            }
+            for (let j = 0; j < to_cons_media["media"].length; j++) {
+                if (to_cons_media["media"][j]["type"] == "video_game") {
+                    count+=1
+                }
+            }
+            data.push(count)
+        }
+    } 
+    output = []
+    output.push(label)
+    output.push(data)
+    return output
+}
+
+var pieChart = new Chart(document.getElementById("pieChart"), {
+    type: 'pie',
+        data: {
+        labels: pieData2,
+        datasets: [
+            {
+            backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850"],
+            data: pieData1
+            }
+        ]
+        }, 
+        options : {
+            responsive: true, 
+            title: {
+                display: true, 
+                text: "Frequency of Media Folder Use"
+            }
+        }
+})
+
+mediaPieData = getMediaPieData()
+pieMediaLabel = mediaPieData[0]
+pieMediaData = mediaPieData[1]
+
+var pieChartMedia = new Chart(document.getElementById("pieChartMedia"), {
+    type: 'doughnut',
+        data: {
+        labels: pieMediaLabel,
+        datasets: [
+            {
+            backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850"],
+            data: pieMediaData
+            }
+        ]
+        }, 
+        options : {
+            responsive: true, 
+            title: {
+                display: true, 
+                text: "Frequncy of Media Types"
+            }
+        }
+})
+
+var chart = new Chart(document.getElementById("barChart"), {
+        type: 'bar',
+        data: {
+        labels: "",
+        datasets: [
+            {
+            label: "",
+            backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850"],
+            data: ""
+            }
+        ]
+        },
+        options: {
+        legend: { display: false, 
+        plugins: {
+            legend: {
+                reverse: true
+                }
+            } 
+        },
+        title: {
+            display: true,
+            text: ''
+        }, 
+        responsive: false,
+        scales : {
+            yAxes : [{
+                ticks : {
+                    beginAtZero : true
+                }
+            }]
+        }
+        }
+        
+    });
+document.getElementById("barChartCont").setAttribute("hidden", true)
+document.getElementById("pieBtn").setAttribute("disabled", true)
+document.getElementById("pieChartMediaCont").setAttribute("hidden", true)
+
+submitForm()
+
+showPie()
+
+</script>
+
+{% endblock %}

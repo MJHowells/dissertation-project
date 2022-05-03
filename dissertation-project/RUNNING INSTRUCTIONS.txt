@@ -1,0 +1,75 @@
+NOTE: This code has been written and run on a University Notebook.
+NOTE: This application requires access to University it systems, either on campus or using the University VPN.
+
+If you do not have the VPN installed, please find instructions to do so 
+here: https://docs.cs.cf.ac.uk/notes/using-the-university-vpn-on-windows/
+
+You will require Python to be installed.
+
+Depending on the status of University IT system, you may view the application in a hosted 
+format at: http://dissertation-project-git-c2106366-dissertation-project.apps.openshift.cs.cf.ac.uk/
+
+
+NOTE: This application
+
+
+Depending on your system, python may respond using "py" or "python"
+
+
+
+[a] Loading Using Existing Virtual Environment
+1.  In the Command Prompt / Terminal Navigate to applications directory
+    (main folder. It should contain files called "Project Main" and "Requirements").
+2.  Run the following code to set the app
+
+    set FLASK_APP=wsgi
+
+3.  Run the following code to initiate the app
+
+    python -m flask run
+
+    OR
+
+    py -m flask run
+
+[b] Running Using a New Virtual Environment
+If the virtual environment provided in the code does not work, you may need 
+to re-install the virtual environment and download the necessary files. 
+1.  In the Command Prompt / Terminal navigate to the applications directory
+    (main folder. It should contain files called "Project Main" and "Requirements").
+2.  Run the following code to set up the virtual environment
+
+    python -m venv venv
+    
+    OR
+
+    py -m venv venv
+
+3.  Activate the virtual environment
+
+    venv\scripts\activate
+
+4.  Install modules and libraries
+
+    pip install -r requirements.txt
+
+    (you may need to prefix this with "py -m" or "python -m")
+
+5.  Leave virtual environment
+
+    deactivate
+
+6.  Set the app in flask
+
+    set FLASK_APP=wsgi
+
+7.  Initiate the app
+
+    python -m flask run
+
+    OR
+
+    py -m flask run
+
+
+

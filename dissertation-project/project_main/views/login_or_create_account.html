@@ -1,0 +1,50 @@
+<!-- Page enables users to login or create account. Acts as a home page when users
+are not logged in. -->
+
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="linksSection">
+    <section class="viewLinks">
+            <div id="pre_login_home_details" >
+                <h4 style="font-weight: bold;">About This Application</h4>
+                <p>This Web-Application has been produced as part of my dissertation project for my postgraduate degree in Computing.</p>
+            </div>
+            <form action="" method="POST" id="login_form_home" novalidate>
+                <h1>Sign In</h1>
+                {{ form.hidden_tag() }}
+                <p>
+                    {{form.email.label}} <br>
+                    {{form.email(size=32)}}
+                    {% for error in form.email.errors %} <br>
+                    <span style="color: red;">[{{ error }}]</span>
+                    {% endfor %}
+                </p>
+                <p>
+                    {{form.password.label}} <br>
+                    {{form.password(size=32)}} <br>
+                    {% for error in form.password.errors %}
+                    <span style="color: red;">[{{ error }}]</span>
+                    {% endfor %}
+                </p>
+                <p>{{form.remember_me()}} {{form.remember_me.label}}</p>
+                <p>{{form.submit}}</p>
+                <p>Dont have an account?</p>
+                <a href="{{ url_for('account_management.create_account') }}" class="btn btn-info">Create Account</a>        
+
+            </form>       
+
+    </section>
+</div>
+
+{% endblock %}
+
+{% block scripts%}
+<script>    
+    document.getElementById("email").setAttribute("class", "form-control")
+    document.getElementById("password").setAttribute("class", "form-control")
+    document.getElementById("remember_me").setAttribute("class", "form-check-input")
+    document.getElementById("submit").setAttribute("class", "btn btn-success")
+
+    </script>
+{% endblock %}

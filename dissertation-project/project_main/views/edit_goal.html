@@ -1,0 +1,105 @@
+<!-- Page enables users to edit goals, pre-loading data into its forms. -->
+
+{% extends 'base.html' %}
+{% block content %}
+<form action="" method="POST" id="edit_goal_form" novalidate>
+    <h1 id="form_title">Update Goal</h1>
+    <div id="tab1" class="add_media_tab">
+        <label for="title">Goal Name:</label> &nbsp; <input class="form-control" type="text" id="title" name="title" value="{{goal['title']}}" placeholder="{{goal['title']}}">
+        <div>
+            <p id="title_error" style="margin: 0px;  color: red;" hidden></p>
+        </div>
+        {% if goal["goal_type"] == "num_hours" %}
+            <label for="goal_ammount" id="goal_amount_tab">Goal Amount:</label> &nbsp; <input class="form-control" type="number" id="goal_ammount" name="goal_ammount" value="{{goal['quantity']['hours']}}">
+        {% else %}
+            <label for="goal_ammount" id="goal_amount_tab">Goal Amount:</label> &nbsp; <input class="form-control" type="number" id="goal_ammount" name="goal_ammount" value="{{goal['quantity']}}">
+        {% endif %}
+        <div>
+            <p id="quant_error" style="margin: 0px;  color: red;" hidden></p>
+        </div>
+        <label for="startDateForm">Start Date&nbsp;<input class="form-control" type="date" name="startDateForm" id="startDateForm" value="{{start_date}}"/></label>
+        <div>
+            <p id="start_date_error" style="margin: 0px;  color: red;" hidden></p>
+        </div>
+        <label for="endDateForm">End Date &nbsp;<input class="form-control" type="date" name="endDateForm" id="endDateForm" value="{{end_date}}"/></label>
+        <div>
+            <p id="end_date_error" style="margin: 0px;  color: red;" hidden></p>
+        </div>
+        </div>
+
+    <div style="overflow:auto;">
+        <div style="float:right;">
+                <div id="nextadd">
+                    <button class="btn btn-success" type="button" id="nextBtn" onclick="validate_forms()">Update</button>
+                </div>
+            </div>
+        </div>
+
+
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    var currentTab = 0;
+    showTab(currentTab);
+
+    var genType = "";
+
+    function showTab(n) {
+        var x = document.getElementsByClassName("add_media_tab");
+        x[n].style.display = "block";
+
+        if (n==0) {
+            document.getElementById("prevBtn").style.display = "none"
+        } else {
+            document.getElementById("prevBtn").style.display = "inline"
+        }
+
+        if (n == (x.length - 1)) {
+            document.getElementById("nextadd").innerHTML = '<button class="btn btn-success" type="button" id="nextBtn" onclick="validate_forms()">Add</button>'
+        } else {
+            document.getElementById("nextadd").innerHTML = '<button class="btn btn-success" type="button" id="nextBtn" onclick="validate_forms()">Update</button>'
+        }
+    }
+
+    function validate_forms() {
+        error = 0
+        if (document.getElementById("title").value == "") {
+            error+=1
+            document.getElementById("title_error").hidden = false
+            document.getElementById("title_error").innerHTML = "[ Please Provide a Title ]"
+        } else {
+            document.getElementById("title_error").hidden = true
+        }
+        if (document.getElementById("goal_ammount").value == "") {
+            error += 1
+            document.getElementById("quant_error").hidden = false
+            document.getElementById("quant_error").innerHTML = "[ Please Provide a Goal Quantity ]"
+        } else {
+            document.getElementById("quant_error").hidden = true
+        }
+        if (document.getElementById("startDateForm").value == "") {
+            error+=1
+            document.getElementById("start_date_error").hidden = false
+            document.getElementById("start_date_error").innerHTML = "[ Please Provide a Start Date ]"
+        } else {
+            document.getElementById("start_date_error").hidden = true
+        }
+        if (document.getElementById("endDateForm").value == "") {
+            error+=1
+            document.getElementById("end_date_error").hidden = false
+            document.getElementById("end_date_error").innerHTML = "[ Please Provide an End Date ]"
+        } else {
+            document.getElementById("end_date_error").hidden = true
+        }
+        if (error == 0) {
+            if (confirm("Confirm Submission?")) {
+                document.getElementById("edit_goal_form").submit();
+                return false;
+            }
+        }   
+        
+    };
+</script>
+{% endblock %}

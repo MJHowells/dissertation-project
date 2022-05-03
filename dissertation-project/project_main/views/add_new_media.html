@@ -1,0 +1,457 @@
+<!-- Page enables users to add new media, allowing them to choose media types, provide details,
+set its consumption status. -->
+
+{% extends 'base.html' %}
+{% block content %}
+<form action="" method="POST" id="add_media_form" novalidate>
+    <h1>Add Media</h1>
+    <div class="add_media_tab"><p style="font-weight: bold;">Select Media Type:</p>
+        {% if "book" in media_types %}
+            <label class="btn btn-outline-secondary" for="book">            
+                <input type="radio" id="book" name="type_select" value="book">
+                Book
+            </label>
+        {% endif %}
+        {% if "movie" in media_types %}
+            <label class="btn btn-outline-secondary" for="movie">
+                <input type="radio"  id="movie" name="type_select" value="movie">
+                Movie
+            </label>
+        {% endif %}
+        {% if "audiobook" in media_types %}
+            <label class="btn btn-outline-secondary" for="audiobook">            
+                <input type="radio" id="audiobook" name="type_select" value="audiobook">
+                Audiobook
+            </label>
+        {% endif %}
+        {% if "video_game" in media_types %}
+            <label class="btn btn-outline-secondary" for="video_game">
+                <input type="radio" id="video_game" name="type_select" value="video_game">
+                Video Game
+            </label>
+        {% endif %}
+        <div>
+            <p id="type_error" style="margin: 0px;  color: red;" hidden></p>
+        </div>
+    </div>
+
+    <div id="tab2" class="add_media_tab">Info:
+
+    </div>
+
+    <div id="tab3" class="add_media_tab">Status:
+
+    </div>
+
+    <div style="overflow:auto;">
+        <div style="float:right; display: flex; flex-direction: row;">
+            <button class="btn btn-secondary" style="margin-right: 5px;" type="button" id="prevBtn" onclick="nextPrev(-1)">Previous</button>
+                <div id="nextadd"> 
+                    <button class="btn btn-info" style="margin-right: 5px;" type="button" id="nextBtn" onclick="validate_forms()">Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="text-align:center;margin-top: 40px;">
+        <span class="step"></span>
+        <span class="step"></span>
+        <span class="step"></span>
+    </div>
+
+
+</form>
+
+<input id="TagStore" value="{{user_tags}}" hidden="true"/>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    var currentTab = 0;
+    showTab(currentTab);
+
+    var genType = "";
+    var user_tags = GetTags()
+    var tagsForms = 0;
+    var actorForms = 0;
+    var authorForms = 0;
+    var naratorForms = 0;
+    var genreForms = 0;
+    var presenterForms = 0;
+    var artistForms = 0;
+    var infoForms = 0;
+
+    var maxDescLength = 500;
+
+    function showTab(n) {
+        var x = document.getElementsByClassName("add_media_tab");
+        x[n].style.display = "block";
+
+        if (n==0) {
+            document.getElementById("prevBtn").style.display = "none"
+        } else {
+            document.getElementById("prevBtn").style.display = "inline"
+        }
+
+        if (n == (x.length - 1)) {
+            document.getElementById("nextadd").innerHTML = '<button class="btn btn-success" style="margin-top: 5px;" type="button" id="nextBtn" onclick="validate_forms()">Add</button>'
+        } else {
+            document.getElementById("nextadd").innerHTML = '<button class="btn btn-info" style="margin-top: 5px;" type="button" id="nextBtn" onclick="validate_forms()">Next</button>'
+        }
+
+        fixStepIndicator(n)
+    }
+
+    function nextPrev(n) {
+        var x = document.getElementsByClassName("add_media_tab");
+
+        var rad = $("input[type='radio'][name='type_select']:checked").val();
+        if (currentTab == 0) {
+            genForm(rad)
+        } 
+
+        x[currentTab].style.display = "none";
+
+        currentTab = currentTab + n;
+
+        if (currentTab == 1) {
+            document.getElementById("description").addEventListener('input', function() {
+            descLength = this.value.length;
+            descLengthLabel.innerHTML = descLength;
+
+            if (descLength > maxDescLength) {
+                this.setCustomValidity("Description to long")
+            } else {
+                this.setCustomValidity('')
+            }
+            })
+        }
+
+        showTab(currentTab);
+    }
+
+    function validate_forms() {
+        if (currentTab == 0) {
+            check_radio = document.querySelector('input[name="type_select"]:checked')
+            if (check_radio != null) {
+                document.getElementById("type_error").hidden = true
+                nextPrev(1)
+            } else {
+                document.getElementById("type_error").hidden = false
+                document.getElementById("type_error").innerHTML = "[ Please Select a Media Type ]"
+            }
+        } else if (currentTab == 1) {
+            error=0
+            if (genType == "video_game") {
+                if (document.getElementById("name_form").value.length == 0) {
+                    error+=1
+                    document.getElementById("name_error").hidden = false
+                    document.getElementById("name_error").innerText = "[ Please Provide a Name ]"
+                } else {
+                    document.getElementById("name_error").hidden = true
+                }
+            } else {
+                if (document.getElementById("title").value.length == 0) {
+                    error+=1
+                    document.getElementById("title_error").hidden = false
+                    document.getElementById("title_error").innerHTML = "[ Please Provide a Title ]"
+                } else {
+                    document.getElementById("title_error").hidden = true
+                }
+            }
+            
+            if (genType == "movie" || genType == "audiobook") {
+                if (String(document.getElementById("duration_hour").value) == "") {
+                    error+=1
+                    document.getElementById("hour_error").hidden = false
+                    document.getElementById("hour_error").innerHTML = "[ Please Provide an Hour Duration between 0 and 99 ]"
+                } else {
+                    document.getElementById("hour_error").hidden = true
+                }
+                if (String(document.getElementById("duration_min").value) == "") {
+                    error +=1
+                    document.getElementById("minute_error").hidden = false
+                    document.getElementById("minute_error").innerHTML = "[ Please Provide a Minute Duration between 0 and 60 ]"
+                } else {
+                    document.getElementById("minute_error").hidden = true
+                }
+            } else if (genType == "book") {
+                if (String(document.getElementById("pages").value) == "") {
+                    error+=1 
+                    document.getElementById("page_error").hidden = false
+                    document.getElementById("page_error").innerHTML = "[ Please Provide a Page Count ]"
+                } else {
+                    document.getElementById("page_error").hidden = true
+                }
+            }
+            if (error == 0) {
+                    nextPrev(1)
+                }
+        } else if (currentTab == 2) {
+            check_radio = document.querySelector('input[name="status_select"]:checked')
+            if (check_radio == null) {
+                document.getElementById("status_error").hidden = false
+                document.getElementById("status_error").innerHTML = "[ Please Select a Status ]"
+            } else {
+                if (confirm("Confirm Submission?")) {
+                    document.getElementById("add_media_form").submit();
+                    return false;
+                }
+            }
+        }
+    };
+
+    
+
+
+    
+
+    function fixStepIndicator(n) {
+        var i, x = document.getElementsByClassName("step");
+        for (i = 0; i < x.length; i++) {
+            x[i].className = x[i].className.replace(" active", "")
+        }
+
+        x[n].className += " active"
+    }
+
+    function specificStartDate() {
+        if (document.getElementById("finished").checked) {
+            var element = document.getElementById("status_date")
+            element.innerHTML = '<label for="start_date_check">Specify Finished Date? &nbsp; &nbsp; &nbsp;<input class="form-check-input" type="checkbox" id="fin_date_check" name="fin_date_check" value="choose_date" onclick="finDateCheck()"></label><div id="fin_date_form"></div>'
+        } else {
+            document.getElementById("status_date").innerHTML = ""
+        }
+    }
+
+    function finDateCheck() {
+        if (document.getElementById("fin_date_check").checked) {
+            var element = document.getElementById("fin_date_form")
+            element.innerHTML = '<label for="start_date_check">Date Finished: &nbsp;<input class="form-control" type="date" id="fin_date", name="fin_date" onclick="finDateCheck() placeholder="yyyy/mm/dd"></label>' 
+        } else {
+            document.getElementById("fin_date_form").innerHTML = ""
+        }
+    }
+    
+    function GetTags() {
+         tags = document.getElementById("TagStore").value
+         document.getElementById("TagStore").remove()
+         return JSON.parse(tags)
+    }
+
+    function GenTagsForm() {
+        var container = document.createElement("div")
+        container.innerHTML = '<input class="form-control" list="ext_tags" name="tag" id="tag" maxlength="100" style="margin-top:5px;"><datalist id="ext_tags"></datalist>'
+        document.getElementById("tagForms").appendChild(container)
+        if (tagsForms < 1) {
+            for (tag in user_tags) {
+                var tag_cont = document.createElement("option")
+                tag_cont.setAttribute("value", user_tags[tag])
+                search = "ext_tags_" + tagsForms.toString() 
+                document.getElementById("ext_tags").appendChild(tag_cont)
+            }
+        }
+        tagsForms+=1
+    }
+
+    function genForm(type) {
+        switch (type) {
+            case "book":
+                 if (genType != type) {
+                    document.getElementById("tab2").innerHTML ='<p style="font-weight:bold;">Book Details:</p><div><label for="title">Book Title:</label> &nbsp; <input class="form-control" type="text" id="title" name="title" maxlength="100" required><p id="title_error" style="margin: 0px;  color: red;" hidden></p></div>' +
+                         '<div><div id="authorForms"><label for="author">Author(s):</label> &nbsp; <input class="form-control" type="text" id="author" name="author"/></div>' +
+                         '<button class="btn btn-primary" id="newAuthorButton" type="button" onclick="newAuthorForm()" style="margin-top:5px";>Add Co-Author</button><div>' +
+                         '<div><label for="description">Description &nbsp; <div><span id="descLengthLabel">0</span>/500</div> <textarea class="form-control" id="description" name="description" rows="5" cols="50" maxlength="500"></textarea></label></div>' +
+                         '<div><label for="pages">Pages:</label> &nbsp; <input class="form-control" type="number" id="pages" name="pages"/> <p id="page_error" style="margin: 0px;  color: red;" hidden></p></div>' +
+                         'Tag(s):<section id="tagSection"><div id="tagForms"></div><button class="btn btn-primary" id="newTagButton" type="button" onclick="newTagsForm()" style="margin-top:5px;">Add Optional Tag</button></section>'
+                        }; 
+                    GenTagsForm()
+                    document.getElementById("tab3").innerHTML = '<p style="font-weight:bold;">Completion Status:</p><div id="status_forms"><label class="btn btn-outline-secondary" for="finished" onclick="specificStartDate()"><input type="radio" id="finished" name="status_select" value="finished">Finished</label>' +
+                    '<label class="btn btn-outline-secondary" for="consuming"><input type="radio" id="consuming" name="status_select" value="consuming" onclick="specificStartDate()">Reading</label>' +
+                    '<label class="btn btn-outline-secondary" for="to_consume"><input type="radio" id="to_consume" name="status_select" value="to_consume" onclick="specificStartDate()">Want to Read</label><div id="status_date"></div><p id="status_error" style="margin: 0px;  color: red;" hidden></p></div>' 
+                    authorForms+=1;
+                genType = type;
+                break;
+            case "movie":
+                if (genType != type) {
+                    document.getElementById("tab2").innerHTML ='<p style="font-weight:bold;">Movie Details:</p><div><label for="title">Movie Title:</label> &nbsp; <input class="form-control" type="text" id="title" name="title" maxlength="100">&nbsp;<p id="title_error" style="margin: 0px;  color: red;" hidden></p></div>' +
+                         '<div><label for="description">Description &nbsp; <div><span id="descLengthLabel">0</span>/500</div> <textarea class="form-control" id="description" name="description" rows="5" cols="50" maxlength="500"></textarea></label></div>' +
+                         '<div><label for="director">Director:</label> &nbsp; <input class="form-control" type="text" id="director" name="director"/></div>' +
+                         '<div id="actorForms"><label for="actor">Actor(s):</label> &nbsp; <input class="form-control" class="form-control" type="text" id="actor" name="actor" style="margin-top: 5px;"/></div>' +
+                         '<div><button class="btn btn-primary" id="newActorButton" type="button" onclick="newActorForm()" style="margin-top: 5px;">Add Actor</button></div>' +
+                         '<div><label for="duration_hour">Duration Hours:</label> &nbsp; <input class="form-control" type="number" id="duration_hour" name="duration_hour" min="0" max="99" placeholder="0-99"/> <p id="hour_error" style="margin: 0px;  color: red;" hidden></p></div>' + 
+                         '<div><label for="duration_min">Duration Minutes:</label> &nbsp; <input class="form-control" type="number" id="duration_min" name="duration_min" min="0" max="60" placeholder="0-59"/> <p id="minute_error" style="margin: 0px;  color: red;" hidden></p></div>' + 
+                         'Tag(s):<section id="tagSection"><div id="tagForms"></div><button class="btn btn-primary" id="newTagButton" type="button" onclick="newTagsForm()" style="margin-top: 5px;">Add Optional Tag</button></section>'
+                        }; 
+                        GenTagsForm()
+                        document.getElementById("tab3").innerHTML = '<p style="font-weight:bold;">Completion Status:</p><div id="status_forms"><label class="btn btn-outline-secondary" for="finished" onclick="specificStartDate()"><input type="radio" id="finished" name="status_select" value="finished">Finished</label>' +
+                    '<label class="btn btn-outline-secondary" for="consuming"><input type="radio" id="consuming" name="status_select" value="consuming" onclick="specificStartDate()">Watching</label>' +
+                    '<label class="btn btn-outline-secondary" for="to_consume"><input type="radio" id="to_consume" name="status_select" value="to_consume" onclick="specificStartDate()">Want to Watch</label><div id="status_date"></div><p id="status_error" style="margin: 0px;  color: red;" hidden></p></div>'
+                    actorForms+=1;
+                genType = type;
+                break;
+            case "audiobook":
+                if (genType != type) {
+                    document.getElementById("tab2").innerHTML ='<p style="font-weight:bold;">Audiobook Details:</p><div><label for="title">Audiobook Title:</label> &nbsp; <input class="form-control" type="text" id="title" name="title" maxlength="100" required>&nbsp;<p id="title_error" style="margin: 0px;  color: red;" hidden></p></div>' +
+                         '<div><div id="authorForms"><label for="author">Author(s):</label> &nbsp; <input class="form-control" type="text" id="author" name="author" style="margin-top: 5px;"/></div>' +
+                         '<button class="btn btn-primary" id="newAuthorButton" type="button" onclick="newAuthorForm()" style="margin-top: 5px;">Add Co-Author</button><div>' +
+                         '<div><div id="naratorForms"><label for="narator">Narator(s):</label> &nbsp; <input class="form-control" type="text" id="narator" name="narator" style="margin-top: 5px;"/></div>' +
+                         '<button class="btn btn-primary" id="newNaratorButton" type="button" onclick="newNaratorForm()" style="margin-top: 5px;">Add Narator</button></div>' +
+                         '<div><label for="description">Description &nbsp; <div><span id="descLengthLabel">0</span>/500</div> <textarea class="form-control" id="description" name="description" rows="5" cols="50" maxlength="500"></textarea></label></div>' +
+                         '<div><label for="duration_hour">Duration Hours:</label> &nbsp; <input class="form-control" type="number" id="duration_hour" name="duration_hour" min="0" max="99" placeholder="0-99"/> <p id="hour_error" style="margin: 0px;  color: red;" hidden></p></div>' + 
+                         '<div><label for="duration_min">Duration Minutes:</label> &nbsp; <input class="form-control" type="number" id="duration_min" name="duration_min" min="0" max="60" placeholder="0-59"/> <p id="minute_error" style="margin: 0px;  color: red;" hidden></p></div>' + 
+                         'Tag(s):<section id="tagSection"><div id="tagForms"></div><button class="btn btn-primary" id="newTagButton" type="button" onclick="newTagsForm()" style="margin-top: 5px;">Add Optional Tag</button></section>'
+                        }; 
+                        GenTagsForm()
+                        document.getElementById("tab3").innerHTML = '<p style="font-weight:bold;">Completion Status:</p><div id="status_forms"><label class="btn btn-outline-secondary" for="finished" onclick="specificStartDate()"><input type="radio" id="finished" name="status_select" value="finished">Finished</label>' +
+                    '<label class="btn btn-outline-secondary" for="consuming"><input type="radio" id="consuming" name="status_select" value="consuming" onclick="specificStartDate()">Listening</label>' +
+                    '<label class="btn btn-outline-secondary" for="to_consume"><input type="radio" id="to_consume" name="status_select" value="to_consume" onclick="specificStartDate()">Want to Listen</label><div id="status_date"></div><p id="status_error" style="margin: 0px;  color: red;" hidden></p></div>'
+                    authorForms+=1;
+                    naratorForms+=1;
+                genType = type;
+                break;
+            case "video_game":
+            if (genType != type) {
+                    document.getElementById("tab2").innerHTML ='<p style="font-weight:bold;">Video Game Details:</p><div><label for="name_form">Name:</label> &nbsp; <input class="form-control" type="text" id="name_form" name="name_form" maxlength="100" required><p id="name_error" style="margin: 0px;  color: red;" hidden></p></div>' +
+                         '<div><div id="genreForms"><label for="genre">Genre(s):</label> &nbsp; <input class="form-control" type="text" id="genre" name="genre" style="margin-top: 5px;"/></div>' +
+                         '<button class="btn btn-primary" id="newGenreButton" type="button" onclick="newGenreForm()" style="margin-top: 5px;">Add Genre</button></div>' +
+                         '<div><label for="developer">Developer</label> &nbsp; <input class="form-control" type="text" id="developer" name="developer" style="margin-top: 5px;"/></div>' +
+                         '<div><label for="description">Description &nbsp; <div><span id="descLengthLabel">0</span>/500</div> <textarea class="form-control" id="description" name="description" rows="5" cols="50" maxlength="500"></textarea></label></div>' +
+                         'Tag(s):<section id="tagSection"><div id="tagForms"></div><button class="btn btn-primary" id="newTagButton" type="button" onclick="newTagsForm()" style="margin-top: 5px;">Add Optional Tag</button></section>'
+                        }; 
+                        GenTagsForm()
+                        document.getElementById("tab3").innerHTML = '<p style="font-weight:bold;">Completion Status:</p><div id="status_forms"><label class="btn btn-outline-secondary" for="finished" onclick="specificStartDate()"><input type="radio" id="finished" name="status_select" value="finished">Finished</label>' +
+                    '<label class="btn btn-outline-secondary" for="consuming"><input type="radio" id="consuming" name="status_select" value="consuming" onclick="specificStartDate()">Playing</label>' +
+                    '<label class="btn btn-outline-secondary" for="to_consume"><input type="radio" id="to_consume" name="status_select" value="to_consume" onclick="specificStartDate()">Want to Play</label><div id="status_date"></div><p id="status_error" style="margin: 0px;  color: red;" hidden></p></div>'
+                    genreForms+=1;
+                genType = type;
+                break;  
+                 
+        }
+    };
+
+    function newTagsForm() {
+        GenTagsForm()
+        if (tagsForms == 5) {
+            tbBtn = document.getElementById("newTagButton");
+            tbBtn.innerHTML="Max Additonal Tags"
+            tbBtn.disabled = true;
+        }
+    }
+    
+    function newActorForm() {
+        if (actorForms < 5) {
+            var container = document.createElement("div")
+            container.innerHTML = '<input class="form-control" type="text" id="actor" name="actor" style="margin-top: 5px;"/>'
+            document.getElementById("actorForms").appendChild(container)
+            actorForms+=1;
+            if (actorForms == 5) {
+                actBtn = document.getElementById("newActorButton");
+                actBtn.innerText="Max Actors"
+                actBtn.disabled = true;
+            }
+        } 
+    }
+
+    function newNaratorForm() {
+        if (naratorForms < 5) {
+            var container = document.createElement("div")
+            container.innerHTML = '<input class="form-control" type="text" id="narator" name="narator" style="margin-top: 5px;"/>'
+            document.getElementById("naratorForms").appendChild(container)
+            naratorForms+=1;
+            if (naratorForms == 5) {
+                actBtn = document.getElementById("newNaratorButton");
+                actBtn.innerText="Max Narators"
+                actBtn.disabled = true;
+            }
+        } 
+        
+    }
+
+    function newAuthorForm() {
+        if (authorForms < 3) {
+            var container = document.createElement("div")
+            container.innerHTML = '<input class="form-control" type="text" id="author" name="author" style="margin-top: 5px;"/>'
+            document.getElementById("authorForms").appendChild(container)
+            authorForms+=1;
+            if (actorForms == 3) {
+                authBtn = document.getElementById("newAuthorButton");
+                authBtn.innerText= "Max Authors"
+                authBtn.disabled = true;
+            }
+        } 
+    }
+
+    function newGenreForm() {
+        if (genreForms < 3) {
+            var container = document.createElement("div")
+            container.innerHTML = '<input class="form-control" type="text" id="genre" name="genre" style="margin-top: 5px;"/>'
+            document.getElementById("genreForms").appendChild(container)
+            genreForms+=1;
+            if (genreForms == 3) {
+                authBtn = document.getElementById("newGenreButton");
+                authBtn.innerText= "Max Genres"
+                authBtn.disabled = true;
+            }
+        } 
+    }
+
+    function newPresenterForm() {
+        if (presenterForms < 3) {
+            var container = document.createElement("div")
+            container.innerHTML = '<input class="form-control" type="text" id="presenter" name="presenter" style="margin-top: 5px;"/>'
+            document.getElementById("presenterForms").appendChild(container)
+            presenterForms+=1;
+            if (presenterForms == 3) {
+                authBtn = document.getElementById("newPresenterButton");
+                authBtn.innerText= "Max Presenters"
+                authBtn.disabled = true;
+            }
+        } 
+    }
+
+    function newArtistForm() {
+        if (artistForms < 3) {
+            var container = document.createElement("div")
+            container.innerHTML = '<input class="form-control" type="text" id="artist" name="artist" style="margin-top: 5px;"/>'
+            document.getElementById("artistForms").appendChild(container)
+            artistForms+=1;
+            if (artistForms == 3) {
+                authBtn = document.getElementById("newArtistButton");
+                authBtn.innerText= "Max Artists"
+                authBtn.disabled = true;
+            }
+        } 
+    }
+
+    function newArtistMusicForm() {
+        if (artistForms < 3) {
+            var container = document.createElement("div")
+            container.innerHTML = '<input class="form-control" type="text" id="artist" name="artist" style="margin-top: 5px;"/>'
+            document.getElementById("artistForms").appendChild(container)
+            artistForms+=1;
+            if (artistForms == 3) {
+                authBtn = document.getElementById("newArtistButton");
+                authBtn.innerText= "Max Artists"
+                authBtn.disabled = true;
+            }
+        } 
+    }
+
+    function newInfoForm() {
+        if (infoForms < 5) {
+            var container = document.createElement("div")
+            container.innerHTML = '<input class="form-control" type="text" id="extraInfo" name="extraInfo" style="margin-top: 5px;"/>'
+            document.getElementById("extraInfoForms").appendChild(container)
+            artistForms+=1;
+            if (artistForms == 5) {
+                authBtn = document.getElementById("newInfoButton");
+                authBtn.innerText= "Max Info"
+                authBtn.disabled = true;
+            }
+        } 
+    }
+
+
+</script>
+{% endblock %}

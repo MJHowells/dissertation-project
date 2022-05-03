@@ -1,0 +1,725 @@
+<!-- Page enables users to edit media, pre-loading data into its forms. -->
+
+
+{% extends 'base.html' %}
+{% block content %}
+
+<form action="" method="POST" id="edit_media_form" novalidate>
+    {% if media["type"] == "video_game" %}
+        <h1>Edit Videogame</h1>
+    {% else %}
+    <h1>Edit {{media["type"][0]|upper}}{{media["type"][1:]}}</h1>
+    {% endif %}
+        {% if media["type"] == "book" %}
+            <div id="tab1" class="add_media_tab">
+                <p style="font-weight: bold;">Book Details</p>
+                <div><label for="title">Book Title:</label> &nbsp; <input class="form-control" type="text" id="title" name="title" value="{{media['title']}}" placeholder="{{media['title']}}" maxlength="100"><p id="title_error" style="margin: 0px;  color: red;" hidden></p></div>
+                <div id="authorForms"> 
+                    {% for act in media["author"] %}
+                        <div>
+                            <label for="author">Author(s): </label>
+                            <input class="form-control" type="text" id="author" name="author" value="{{act}}" placeholder="{{act}}" size="4" maxlength="52">
+                        </div>
+                    {% endfor %}
+                </div>  
+                <button class="btn btn-primary" id="newAuthorButton" type="button" onclick="newAuthorForm()" style="margin-top: 5px;">Add Author</button>
+                <button class="btn btn-danger" id="delAuthorButton" type="button" onclick="delAuthorForm()" style="margin-top: 5px;">Delete Author</button>
+                <div><label for="description">Description &nbsp; <div><span id="descLengthLabel">0</span>/500</div> <textarea class="form-control" id="description" name="description" rows="5" cols="50" maxlength="500" value="{{media['description']}}">{{media['description']}}</textarea></label></div>
+                <div><label for="pages">Pages:</label> &nbsp; <input class="form-control" type="number" id="pages" name="pages" value="{{media['length']}}" placeholder="{{media['length']}}"/><p id="page_error" style="margin: 0px;  color: red;" hidden></p></div>
+            </div>
+
+            <div id="tab2" class="add_media_tab">
+                <p style="font-weight: bold;">Tags</p>
+                <section id="tagSection">
+                    <div id="tagForms">
+                        {% for tag in media["tags"] %}
+                            <div>
+                                <label for="tag">Tag: &nbsp; </label>
+                                <input class="form-control" list="ext_tags" name="tag" id="tag" value="{{tag}}" placeholder="{{tag}}" maxlength="100">
+                            </div>
+                        {% endfor %}   
+                    </div>
+                        <datalist id="ext_tags">
+                            {% for t in user_tags %}
+                                <option value="{{t}}"></option>
+                            {% endfor %}
+
+                        </datalist>
+                    <div>
+                        <button class="btn btn-primary" id="newTagButton" type="button" onclick="GenTagsForm()" style="margin-top: 5px;">Add Optional Tag</button>
+                        <button class="btn btn-danger" id="delTagButton" type="button" onclick="delTagsForm()" style="margin-top: 5px;">Delete Tag</button>
+                    </div>
+                </section>
+            </div>
+        
+            <div id="tab3" class="add_media_tab">
+                
+                <label for="add_date" style="font-weight: bold;">Date Added</label> &nbsp; <input class="form-control" type="date" id="add_date" name="add_date" value="{{media['date_added']}}">
+                <p id="date_error" style="margin: 0px;  color: red;" hidden></p>
+            </div>
+
+        {% elif media["type"] == "movie" %}
+            <div id="tab1" class="add_media_tab">
+                <p style="font-weight: bold;">Movie Details</p>
+
+                <div><label for="title">Movie Title:</label> &nbsp; <input class="form-control" type="text" id="title" name="title" value="{{media['title']}}" placeholder="{{media['title']}}" maxlength="50"><p id="title_error" style="margin: 0px;  color: red;" hidden></p></div>
+                <div><label for="title">Director:</label> &nbsp; <input class="form-control" type="text" id="director" name="director" value="{{media['director']}}" placeholder="{{media['director']}}" maxlength="50"></div>
+
+                <div id="actorForms"> 
+                    {% for aut in media["actors"] %}
+                        <div>
+                            <label for="author">Actor: &nbsp;
+                            <input class="form-control" type="text" id="actor" name="actor" value="{{aut}}" placeholder="{{aut}}" maxlength="50">
+                            </label>
+                        </div>
+                    {% endfor %}
+                </div>  
+                <button class="btn btn-primary" id="newActorButton" type="button" onclick="newActorForm()" style="margin-top: 5px;">Add Actor</button>
+                <button class="btn btn-danger" id="delActorButton" type="button" onclick="delActorForm()" style="margin-top: 5px;">Delete Actor</button>
+                <div><label for="description">Description &nbsp; <div><span id="descLengthLabel">0</span>/500</div> <textarea class="form-control" id="description" name="description" rows="5" cols="50" maxlength="500" value="{{media['description']}}">{{media['description']}}</textarea></label></div>
+                <div><label for="hours">Duration Hours:</label> &nbsp; <input class="form-control" type="number" id="hours" name="hours" value="{{duration[0]}}" placeholder="{{duration[0]}}"/><p id="hour_error" style="margin: 0px;  color: red;" hidden></p></div>
+                <div><label for="minutes">Duration Minutes:</label> &nbsp; <input class="form-control" type="number" id="minutes" name="minutes" value="{{duration[1]}}" placeholder="{{duration[1]}}"/><p id="minute_error" style="margin: 0px;  color: red;" hidden></p></div>
+
+            </div>
+
+            <div id="tab2" class="add_media_tab">
+                <section id="tagSection">
+                    <p style="font-weight: bold;">Tags</p>
+                    <div id="tagForms">
+                        {% for tag in media["tags"] %}
+                            <div>
+                                <label for="tag">Tag: &nbsp; </label>
+                                <input list="ext_tags" name="tag" id="tag" value="{{tag}}" placeholder="{{tag}}" maxlength="100">
+                            </div>
+                        {% endfor %}   
+                    </div>
+                        <datalist id="ext_tags">
+                            {% for t in user_tags %}
+                                <option value="{{t}}"></option>
+                            {% endfor %}
+
+                        </datalist>
+                    <div>
+                        <button class="btn btn-primary" id="newTagButton" type="button" onclick="GenTagsForm()" style="margin-top: 5px;">Add Optional Tag</button>
+                        <button class="btn btn-danger" id="delTagButton" type="button" onclick="delTagsForm()" style="margin-top: 5px;">Delete Tag</button>
+                    </div>
+                </section>
+            </div>
+
+            <div id="tab3" class="add_media_tab">
+                <label for="add_date" style="font-weight: bold;">Date Added</label> &nbsp; <input class="form-control" type="date" id="add_date" name="add_date" value="{{media['date_added']}}">
+                <p id="date_error" style="margin: 0px;  color: red;" hidden></p>
+            </div>
+        {% elif media["type"] == "audiobook" %}
+        <div id="tab1" class="add_media_tab">
+            <p style="font-weight: bold;">Audiobook Details</p>
+
+            <div><label for="title">Book Title Title:</label> &nbsp; <input class="form-control" type="text" id="title" name="title" value="{{media['title']}}" placeholder="{{media['title']}}" maxlength="100"><p id="title_error" style="margin: 0px;  color: red;" hidden></p></div>
+            <div id="authorForms"> 
+                {% for act in media["author"] %}
+                    <div>
+                        <label for="author">Authors: &nbsp;
+                        <input class="form-control" type="text" id="author" name="author" value="{{act}}" placeholder="{{act}}" maxlength="50">
+                        </label>
+                    </div>
+                {% endfor %}
+            </div>
+            <button class="btn btn-primary" id="newAuthorButton" type="button" onclick="newAuthorForm()" style="margin-top: 5px;">Add Author</button>
+            <button class="btn btn-danger" id="delAuthorButton" type="button" onclick="delAuthorForm()" style="margin-top: 5px;">Delete Author</button>
+
+            <div id="narratorForms"> 
+                {% for aut in media["narrators"] %}
+                    <div>
+                        <label for="narrator">Narrator: &nbsp;
+                        <input class="form-control" type="text" id="narrator" name="narrator" value="{{aut}}" placeholder="{{aut}}">
+                        </label>
+                    </div>
+                {% endfor %}
+            </div>  
+            <button class="btn btn-primary" id="newNarratorButton" type="button" onclick="newNarForm()" style="margin-top: 5px;">Add Narrator</button>
+            <button class="btn btn-danger" id="delNarratorButton" type="button" onclick="delNarForm()" style="margin-top: 5px;">Delete Narrator</button>
+            <div><label for="description">Description &nbsp; <div><span id="descLengthLabel">0</span>/500</div> <textarea class="form-control" id="description" name="description" rows="5" cols="50" maxlength="500" value="{{media['description']}}">{{media['description']}}</textarea></label></div>
+            <div><label for="hours">Duration Hours:</label> &nbsp; <input class="form-control" type="number" id="hours" name="hours" value="{{duration[0]}}" placeholder="{{duration[0]}}" min="0" max="99"/><p id="hour_error" style="margin: 0px;  color: red;" hidden></p></div>
+            <div><label for="minutes">Duration Minutes:</label> &nbsp; <input class="form-control" type="number" id="minutes" name="minutes" value="{{duration[1]}}" placeholder="{{duration[1]}}" min="0" max="60"/><p id="minute_error" style="margin: 0px;  color: red;" hidden></p></div>
+
+        </div>
+
+        <div id="tab2" class="add_media_tab">
+            <p style="font-weight: bold;">Tags</p>
+            <section id="tagSection">
+                <div id="tagForms">
+                    {% for tag in media["tags"] %}
+                        <div>
+                            <label for="tag">Tag: &nbsp; </label>
+                            <input list="ext_tags" name="tag" id="tag" value="{{tag}}" placeholder="{{tag}}" maxlength="100">
+                        </div>
+                    {% endfor %}   
+                </div>
+                    <datalist id="ext_tags">
+                        {% for t in user_tags %}
+                            <option value="{{t}}"></option>
+                        {% endfor %}
+
+                    </datalist>
+                <div>
+                    <button class="btn btn-primary" id="newTagButton" type="button" onclick="GenTagsForm()" style="margin-top: 5px;">Add Optional Tag</button>
+                    <button class="btn btn-danger" id="delTagButton" type="button" onclick="delTagsForm()" style="margin-top: 5px;">Delete Tag</button>
+                </div>
+            </section>
+        </div>
+
+        <div id="tab3" class="add_media_tab">
+            <label for="add_date" style="font-weight: bold;">Date Added</label> &nbsp; <input class="form-control" type="date" id="add_date" name="add_date" value="{{media['date_added']}}">
+            <p id="date_error" style="margin: 0px;  color: red;" hidden></p>
+        </div>
+
+        {% elif media["type"] == "video_game" %}
+        <div id="tab1" class="add_media_tab">
+            <p style="font-weight: bold;">Videogame Details</p>
+
+            <div><label for="title">Videogame Title:</label> &nbsp; <input class="form-control" type="text" id="title" name="title" value="{{media['title']}}" placeholder="{{media['title']}}" maxlength="100"><p id="title_error" style="margin: 0px;  color: red;" hidden></p></div>
+            <div id="genreForms"> 
+                {% for aut in media["genre"] %}
+                    <div>
+                        <label for="genre">Genre: &nbsp;
+                        <input class="form-control" type="text" id="genre" name="genre" value="{{aut}}" placeholder="{{aut}}" maxlength="50">
+                        </label>
+                    </div>
+                {% endfor %}
+            </div>  
+            <button class="btn btn-primary" id="newGenreButton" type="button" onclick="newGenreForm()" style="margin-top: 5px;">Add Genre</button>
+            <button class="btn btn-danger" id="delGenreButton" type="button" onclick="delGenreForm()" style="margin-top: 5px;">Delete Genre</button>
+            <div><label for="developer">Developer</label> &nbsp; <input class="form-control" type="text" id="developer" name="developer" value="{{media['developer']}}" placeholder="{{media['developer']}}"/></div>
+            <div><label for="description">Description &nbsp; <div><span id="descLengthLabel">0</span>/500</div> <textarea class="form-control" id="description" name="description" rows="5" cols="50" maxlength="500" value="{{media['description']}}">{{media['description']}}</textarea></label></div>
+
+        </div>
+
+        <div id="tab2" class="add_media_tab"
+            <p style="font-weight: bold;">Tags</p>
+            <section id="tagSection">
+                <div id="tagForms">
+                    {% for tag in media["tags"] %}
+                        <div>
+                            <label for="tag">Tag: &nbsp; </label>
+                            <input list="ext_tags" name="tag" id="tag" value="{{tag}}" placeholder="{{tag}}" maxlength="100">
+                        </div>
+                    {% endfor %}   
+                </div>
+                    <datalist id="ext_tags">
+                        {% for t in user_tags %}
+                            <option value="{{t}}"></option>
+                        {% endfor %}
+
+                    </datalist>
+                <div>
+                    <button class="btn btn-primary" id="newTagButton" type="button" onclick="GenTagsForm()" style="margin-top: 5px;">Add Optional Tag</button>
+                    <button class="btn btn-danger" id="delTagButton" type="button" onclick="delTagsForm()" style="margin-top: 5px;">Delete Tag</button>
+                </div>
+            </section>
+        </div>
+
+        <div id="tab3" class="add_media_tab">
+                <label for="add_date" style="font-weight: bold;">Date Added</label> &nbsp; <input class="form-control" type="date" id="add_date" name="add_date" value="{{media['date_added']}}">
+                <p id="date_error" style="margin: 0px;  color: red;" hidden></p>
+        </div>
+
+    {% endif %}
+
+    <div style="overflow:auto;">
+        <div class="nextprevbtn" style="float:right;">
+            <button class="btn btn-warning" type="button" id="prevBtn" onclick="nextPrev(-1)" style="margin-top: 5px;">Previous</button> &nbsp;
+                <div id="nextadd">
+                    <button class="btn btn-info" type="button" id="nextBtn" onclick="validate_forms()" style="margin-top: 5px;">Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="text-align:center;margin-top: 40px;">
+        <span class="step"></span>
+        <span class="step"></span>
+        <span class="step"></span>
+    </div>
+
+
+</form>
+
+<input id="TypeStore" value="{{media['type']}}" hidden="true"/>
+<input id="MTagStore" value="{{media['tags']}}" hidden="true"/>
+
+{% if media["type"] == "book" %}
+    <input class="form-control" id="AutStore" value="{{media['author']}}" hidden="true"/>
+
+{% elif media["type"] == "movie" %}
+    <input class="form-control" id="ActStore" value="{{media['actors']}}" hidden="true"/>
+{% elif media["type"] == "audiobook" %}
+    <input class="form-control" id="AutStore" value="{{media['author']}}" hidden="true"/>
+    <input class="form-control" id="NarratorStore" value="{{media['narrators']}}" hidden="true"/>
+{% elif media["type"] == "video_game" %}
+    <input class="form-control" id="GenreStore" value="{{media['genre']}}" hidden="true"/>
+{% endif %}
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    var currentTab = 0;
+    showTab(currentTab);
+    media_tags = getTags()
+
+    var tagForms = media_tags.length
+    var type = getType()
+    if (type == "book") {
+        media_authors = getAuthors()
+        var authorForms = media_authors.length;
+    } else if (type == "movie") {
+        media_actors = getActors()
+        var actorForms = media_actors.length
+    } else if (type == "audiobook") {
+        media_authors = getAuthors()
+        media_narrators = getNarrators()
+        var authorForms = media_authors.length
+        var narForm = media_narrators.length
+    } else if (type == "podcast") {
+        media_presentors = getPresentors()
+        media_genres = getGenres()
+        var presForms = media_presentors.length
+        var genreForms = media_genres.length
+    } else if (type == "music") {
+        media_artists = getArtists()
+        var artistForms = media_artists.length
+    } else if (type == "video_game") {
+        media_genres = getGenres()
+        var genreForms = media_genres.length
+    }
+    newTagsForm()
+
+    if (currentTab == 0) {
+            document.getElementById("description").addEventListener('input', function() {
+            descLength = this.value.length;
+            descLengthLabel.innerHTML = descLength;
+
+            if (descLength > maxDescLength) {
+                this.setCustomValidity("Description to long")
+            } else {
+                this.setCustomValidity('')
+            }
+            })
+        }
+
+    function validate_forms() {
+        if (currentTab == 0) {
+            error=0
+            if (document.getElementById("title").value.length == 0) {
+                error+=1
+                document.getElementById("title_error").hidden = false
+                document.getElementById("title_error").innerHTML = "[ Please Provide a Title ]"
+            } else {
+                document.getElementById("title_error").hidden = true
+            }
+            if (type == "movie" || type == "audiobook") {
+                if (String(document.getElementById("hours").value) == "") {
+                    error+=1
+                    document.getElementById("hour_error").hidden = false
+                    document.getElementById("hour_error").innerHTML = "[ Please Provide an Hour Duration between 0 and 99 ]"
+                } else {
+                    document.getElementById("hour_error").hidden = true
+                }
+                if (String(document.getElementById("minutes").value) == "") {
+                    error +=1
+                    document.getElementById("minute_error").hidden = false
+                    document.getElementById("minute_error").innerHTML = "[ Please Provide a Minute Duration between 0 and 60 ]"
+                } else {
+                    document.getElementById("minute_error").hidden = true
+                }
+            } else if (type == "book") {
+                if (String(document.getElementById("pages").value) == "") {
+                    error+=1 
+                    document.getElementById("page_error").hidden = false
+                    document.getElementById("page_error").innerHTML = "[ Please Provide a Page Count ]"
+                } else {
+                    document.getElementById("page_error").hidden = true
+                }
+            }
+            if (error == 0) {
+                    nextPrev(1)
+                }
+        } else if (currentTab == 1) {
+            nextPrev(1)
+        } else if (currentTab == 2) {
+            error = 0
+            if (document.getElementById("add_date").value == "") {
+                error = error + 1
+                document.getElementById("date_error").hidden = false
+                document.getElementById("date_error").innerHTML = "[ Please Enter a Valid Date ]"
+            } else {
+                document.getElementById("date_error").hidden = true
+                if (error == 0) {
+                    if (confirm("Confirm Submission?")) {
+                    document.getElementById("edit_media_form").submit();
+                    return false;
+                }
+                }
+            }
+        }
+    };
+
+    function getType() {
+        type = document.getElementById("TypeStore").value
+        document.getElementById("TypeStore").remove()
+        return type
+    }
+
+    function getTags() {
+        tags = document.getElementById("MTagStore").value
+        document.getElementById("MTagStore").remove()
+        tags = tags.replace(/'/g, '"')
+        return JSON.parse(tags)
+    }
+
+    function getAuthors() {
+        aut = document.getElementById("AutStore").value
+        document.getElementById("AutStore").remove()
+        aut = aut.replace(/'/g, '"')
+        return JSON.parse(aut)
+    }
+
+    function getActors() {
+        act = document.getElementById("ActStore").value
+        document.getElementById("ActStore").remove()
+        act = act.replace(/'/g, '"')
+        return JSON.parse(act)
+    }
+
+    function getNarrators() {
+        nar = document.getElementById("NarratorStore").value
+        document.getElementById("NarratorStore").remove()
+        nar = nar.replace(/'/g, '"')
+        return JSON.parse(nar)
+    }
+
+    function getPresentors() {
+        pres = document.getElementById("PresStore").value
+        document.getElementById("PresStore").remove()
+        pres = pres.replace(/'/g, '"')
+        return JSON.parse(pres)
+    }
+
+    function getGenres() {
+        genre = document.getElementById("GenreStore").value
+        document.getElementById("GenreStore").remove()
+        genre = genre.replace(/'/g, '"')
+        return JSON.parse(genre)
+    }
+
+    function getArtists() {
+        artist = document.getElementById("ArtistStore").value
+        document.getElementById("ArtistStore").remove()
+        artist = artist.replace(/'/g, '"')
+        return JSON.parse(artist)
+    }
+
+    function showTab(n) {
+        var x = document.getElementsByClassName("add_media_tab");
+        x[n].style.display = "block";
+
+        if (n==0) {
+            document.getElementById("prevBtn").style.display = "none"
+        } else {
+            document.getElementById("prevBtn").style.display = "inline"
+        }
+
+        if (n == (x.length - 1)) {
+            document.getElementById("nextadd").innerHTML = '<button class="btn btn-success" type="button" id="nextBtn" onclick="validate_forms()" style="margin-top: 5px;">Update</button>'
+        } else {
+            document.getElementById("nextadd").innerHTML = '<button class="btn btn-info" type="button" id="nextBtn" onclick="validate_forms()" style="margin-top: 5px;">Next</button>'
+        }
+
+        fixStepIndicator(n)
+    }
+
+    function nextPrev(n) {
+        var x = document.getElementsByClassName("add_media_tab");
+
+        x[currentTab].style.display = "none";
+
+        currentTab = currentTab + n;
+
+        showTab(currentTab);
+    }
+
+    function fixStepIndicator(n) {
+        var i, x = document.getElementsByClassName("step");
+        for (i = 0; i < x.length; i++) {
+            x[i].className = x[i].className.replace(" active", "")
+        }
+
+        x[n].className += " active"
+    }
+    
+    function GenTagsForm() {
+        var container = document.createElement("div")
+        container.innerHTML = '<input class="form-control" list="ext_tags" name="tag" id="tag" style="margin-top: 5px;">'
+        document.getElementById("tagForms").appendChild(container)
+        tagForms+=1
+        newTagsForm()
+    }
+
+    function newTagsForm() {
+        if (tagForms < (2 + media_tags.length)) {
+            tagBtn = document.getElementById("delTagButton")
+            tagBtn.disabled = false;
+        } else if (tagForms == (2 + media_tags.length)) {
+            tagBtn = document.getElementById("newTagButton")
+            tagBtn.disabled = true;
+        }
+    }
+
+    function delTagsForm() {
+        if (tagForms > 1) {
+            var form = document.getElementById("tagForms")
+            form.removeChild(form.lastElementChild)
+            tagForms-=1
+        }
+
+        if (tagForms > 1) {
+            tagBtn = document.getElementById("delTagButton")
+            tagBtn.disabled = false;
+        }
+        else if (tagForms == 1) {
+            tagBtn = document.getElementById("delTagButton")
+            tagBtn.disabled = true;
+        }
+
+        if (tagForms < (2 + media_tags.length)) {
+            tagBtn = document.getElementById("newTagButton")
+            tagBtn.disabled = false;
+        } else if (tagForms == (2 + media_tags.length)) {
+            tagBtn = document.getElementById("newTagButton")
+            tagBtn.disabled = true;
+        }
+    }
+    
+    function newAuthorForm() {
+        if (authorForms < 3) {
+            var container = document.createElement("div")
+            container.innerHTML = '<input class="form-control" type="text" id="author" name="author" style="margin-top: 5px;"/>'
+            document.getElementById("authorForms").appendChild(container)
+            authorForms+=1;
+        } 
+        if (authorForms > 1) {
+            autBtn = document.getElementById("delAuthorButton");
+            autBtn.innerText = "Delete Author"
+            autBtn.disabled = false;
+        } else if (authorForms >= 2) {
+            autBtn = document.getElementById("delAuthorButton");
+            autBtn.innerText = "Delete Author"
+            autBtn.disabled = true;
+        }
+
+        if (authorForms == 3) {
+            authBtn = document.getElementById("newAuthorButton");
+            authBtn.innerText= "Max Authors"
+            authBtn.disabled = true;
+        } else if (authorForms < 2 || authorForms > 0) {
+            authBtn = document.getElementById("newAuthorButton");
+            authBtn.innerText= "Add Author"
+            authBtn.disabled = false;
+        }
+    }
+
+    function delAuthorForm() {
+        if (authorForms > 1) {
+            var form = document.getElementById("authorForms")
+            form.removeChild(form.lastElementChild)
+            authorForms-=1
+        }
+        if (authorForms > 1) {
+            autBtn = document.getElementById("delAuthorButton");
+            autBtn.innerText = "Delete Author"
+            autBtn.disabled = false;
+        } else if (authorForms == 1) {
+            autBtn = document.getElementById("delAuthorButton");
+            autBtn.innerText = "Delete Author"
+            autBtn.disabled = true;
+        }
+
+        if (authorForms == 3) {
+            authBtn = document.getElementById("newAuthorButton");
+            authBtn.innerText= "Max Authors"
+            authBtn.disabled = true;
+        } else if (authorForms < 2) {
+            authBtn = document.getElementById("newAuthorButton");
+            authBtn.innerText= "Add Author"
+            authBtn.disabled = false;
+        }
+    }
+
+    function newActorForm() {
+        if (actorForms < 5) {
+            var container = document.createElement("div")
+            container.innerHTML = '<input class="form-control" type="text" id="actor" name="actor" style="margin-top: 5px;"/>'
+            document.getElementById("actorForms").appendChild(container)
+            actorForms+=1;
+        } 
+        if (actorForms <= 1) {
+            autBtn = document.getElementById("newActorButton");
+            autBtn.innerText = "New Actor"
+            autBtn.disabled = false;
+        } else if (actorForms >= 5) {
+            autBtn = document.getElementById("newActorButton");
+            autBtn.innerText = "Max Actors"
+            autBtn.disabled = true;
+        }
+
+        if (actorForms <= 1) {
+            authBtn = document.getElementById("delActorButton");
+            authBtn.innerText= "Delete Actor"
+            authBtn.disabled = true;
+        } else if (actorForms > 1) {
+            authBtn = document.getElementById("delActorButton");
+            authBtn.innerText= "Delete Actor"
+            authBtn.disabled = false;
+        }
+    }
+
+    function delActorForm() {
+        if (actorForms > 1) {
+            var form = document.getElementById("actorForms")
+            form.removeChild(form.lastElementChild)
+            actorForms-=1
+        }
+        if (actorForms > 1) {
+            autBtn = document.getElementById("newActorButton");
+            autBtn.innerText = "New Actor"
+            autBtn.disabled = false;
+        } else if (actorForms == 5) {
+            autBtn = document.getElementById("newActorButton");
+            autBtn.innerText = "Max Actors"
+            autBtn.disabled = true;
+        }
+
+        if (actorForms <= 1) {
+            authBtn = document.getElementById("delActorButton");
+            authBtn.innerText= "Delete Actor"
+            authBtn.disabled = true;
+        } else if (actorForms <= 5) {
+            authBtn = document.getElementById("delActorButton");
+            authBtn.innerText= "Delete Actor"
+            authBtn.disabled = false;
+        }
+    }
+
+    function newNarForm() {
+        if (narForm < 5) {
+            var container = document.createElement("div")
+            container.innerHTML = '<input class="form-control" type="text" id="narrator" name="narrator" style="margin-top: 5px;"/>'
+            document.getElementById("narratorForms").appendChild(container)
+            narForm+=1;
+        } 
+        if (narForm <= 1) {
+            autBtn = document.getElementById("newNarratorButton");
+            autBtn.innerText = "Add Narrator"
+            autBtn.disabled = false;
+        } else if (narForm >= 5) {
+            autBtn = document.getElementById("newNarratorButton");
+            autBtn.innerText = "Max Narrators"
+            autBtn.disabled = true;
+        }
+
+        if (narForm <= 1) {
+            authBtn = document.getElementById("delActorButton");
+            authBtn.innerText= "Delete Narrator"
+            authBtn.disabled = true;
+        } else if (narForm > 1) {
+            authBtn = document.getElementById("delActorButton");
+            authBtn.innerText= "Delete Narrator"
+            authBtn.disabled = false;
+        }
+    }
+
+    function delNarForm() {
+        if (narForm > 1) {
+            var form = document.getElementById("narratorForms")
+            form.removeChild(form.lastElementChild)
+            narForm-=1
+        }
+        if (narForm > 1) {
+            autBtn = document.getElementById("newNarratorButton");
+            autBtn.innerText = "Add Narrator"
+            autBtn.disabled = false;
+        } else if (narForm == 5) {
+            autBtn = document.getElementById("newNarratorButton");
+            autBtn.innerText = "Max Narrators"
+            autBtn.disabled = true;
+        }
+
+        if (narForm <= 1) {
+            authBtn = document.getElementById("delNarratorButton");
+            authBtn.innerText= "Delete Narrator"
+            authBtn.disabled = true;
+        } else if (narForm <= 5) {
+            authBtn = document.getElementById("delNarratorButton");
+            authBtn.innerText= "Delete Narrator"
+            authBtn.disabled = false;
+        }
+    }
+    
+    function newGenreForm() {
+        if (genreForms < 5) {
+            var container = document.createElement("div")
+            container.innerHTML = '<input class="form-control" type="text" id="genre" name="genre" style="margin-top: 5px;"/>'
+            document.getElementById("genreForms").appendChild(container)
+            genreForms+=1;
+        } 
+        if (genreForms <= 1) {
+            autBtn = document.getElementById("newGenreButton");
+            autBtn.innerText = "Add Narrator"
+            autBtn.disabled = false;
+        } else if (genreForms >= 5) {
+            autBtn = document.getElementById("newGenreButton");
+            autBtn.innerText = "Max Narrators"
+            autBtn.disabled = true;
+        }
+
+        if (genreForms <= 1) {
+            authBtn = document.getElementById("delGenreButton");
+            authBtn.innerText= "Delete Narrator"
+            authBtn.disabled = true;
+        } else if (genreForms > 1) {
+            authBtn = document.getElementById("delGenreButton");
+            authBtn.innerText= "Delete Narrator"
+            authBtn.disabled = false;
+        }
+    }
+
+    function delGenreForm() {
+        if (genreForms > 1) {
+            var form = document.getElementById("genreForms")
+            form.removeChild(form.lastElementChild)
+            genreForms-=1
+        }
+        if (genreForms > 1) {
+            autBtn = document.getElementById("newGenreButton");
+            autBtn.innerText = "Add Genre"
+            autBtn.disabled = false;
+        } else if (genreForms == 5) {
+            autBtn = document.getElementById("newGenreButton");
+            autBtn.innerText = "Max Genres"
+            autBtn.disabled = true;
+        }
+
+        if (genreForms <= 1) {
+            authBtn = document.getElementById("delGenreButton");
+            authBtn.innerText= "Delete Genre"
+            authBtn.disabled = true;
+        } else if (genreForms <= 5) {
+            authBtn = document.getElementById("delGenreButton");
+            authBtn.innerText= "Delete Genre"
+            authBtn.disabled = false;
+        }
+    }
+
+</script>
+{% endblock %}

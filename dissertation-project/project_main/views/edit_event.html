@@ -1,0 +1,100 @@
+<!-- Page enables users to edit existing events, pre-loading data into its forms. -->
+
+{% extends 'base.html' %}
+{% block content %}
+    <section>
+        <form method="POST" id="add_event_form" class="add_event_form" novalidate>
+            <h2>Edit Event</h2>
+            <h6>Rating:</h6>
+            <input class="form-control" type="number" id="rating" name="rating" min="1" max="5" value="{{event['rating']}}" placeholder="{{event['rating']}}"><br>
+            <div>
+                <p id="rating_error" style="margin: 0px;  color: red;" hidden></p>
+            </div>
+            <h6>Review:</h6>
+            <textarea class="form-control" cols="40" rows="5" id="review" name="review" value="{{event['review']}}" placeholder="{{event['review']}}">{{event["review"]}}</textarea><br>
+            <h6>Progress:</h6>
+            {% if media["type"] == "book" %}  
+            {% set len = media["length"] | int %}
+            <div style="display: flex; flex-direction: row;">
+                <input class="form-control" type="number" name="progress" id="progress" min="0" max="{{len}}" value="{{event['progress']}}" placeholder="{{event['progress']}}"> / {{len}}<br>
+
+                <p id="progress_error" style="margin: 0px;  color: red;" hidden></p>
+            </div>
+            
+            {% elif media["type"] == "video_game" or media["type"] == "podcast" %}
+    
+            {% else %}
+            <input class="form-control" type="number" name="hour" id="hour" placeholder="{{hours}}" value="{{hours}}"><br>
+            <div>
+                <p id="progress_error_hour" style="margin: 0px;  color: red;" hidden></p>
+            </div>
+            <input class="form-control" type="number" name="min" id="min" placeholder="{{minutes}}" value="{{minutes}}"><br>
+            <div>
+                <p id="progress_error_min" style="margin: 0px;  color: red;" hidden></p>
+            </div>
+            {% endif %}
+            <!-- <label for="dateForm">Date:<input type="date" name="dateForm" id="dateForm"></label> -->
+            <input style="margin-top: 5px;" class="btn btn-success" type="button" name="btnsubmit" id="btnsubmit" value="submit" onclick="validate_forms()">
+        </form>
+    </section>
+
+    <input type="text" name="typeStore" id="typeStore" value="{{ media['type'] }}">
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+type = document.getElementById("typeStore").value
+document.getElementById("typeStore").remove()
+
+function validate_forms() {
+        
+        error = 0
+        if (String(document.getElementById("rating").value) == "") {
+            error+=1
+            document.getElementById("rating_error").hidden = false
+            document.getElementById("rating_error").innerHTML = "[ Please Provide a Rating ]"
+        } else {
+            document.getElementById("rating_error").hidden = true
+        }
+
+        if (type == "book") {
+            if (String(document.getElementById("progress").value) == "") {
+                error+=1
+                document.getElementById("progress_error").hidden = false
+                document.getElementById("progress_error").innerHTML = "[ Please Provide a Progress Value ]"
+            } else {
+                document.getElementById("progress_error").hidden = true
+            }
+        } else if (type == "movie" || type == "audiobook") {
+            if (String(document.getElementById("hour").value) == "") {
+                error +=1
+                document.getElementById("progress_error_hour").hidden = false
+                document.getElementById("progress_error_hour").innerHTML = "[ Please Provide an Hour Progress Value ]"
+            } else {
+                document.getElementById("progress_error_hour").hidden = true
+            }
+
+            if (String(document.getElementById("min").value) == "") {
+                error+=1
+                document.getElementById("progress_error_min").hidden = false
+                document.getElementById("progress_error_min").innerHTML = "[ Please Provide a Minute Progress Value ]"
+            } else {
+                document.getElementById("progress_error_min").hidden = true
+            }
+
+        }
+
+        if (error == 0) {
+            if (confirm("Confirm Submission?")) {
+                document.getElementById("add_event_form").submit();
+                return false;
+            }
+        }
+        
+    };
+    
+    
+</script>
+{% endblock %}

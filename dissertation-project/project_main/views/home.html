@@ -1,0 +1,288 @@
+<!-- Page enables users to access all parts of the application, acting as a central area
+for all features. -->
+
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="homePageCont">
+    <div class="linksSection">
+        <section class="viewLinks">
+
+            <div>
+                <a href="{{ url_for('consumption_interaction.view_media_consumed') }}" class="btn btn-secondary customButtonSize">View Consumed Media</a>
+            </div>
+            <div>
+                <a href="{{ url_for('consumption_interaction.view_media_consuming') }}" class="btn btn-secondary customButtonSize">View Consuming Media</a>
+            </div>
+            <div>
+                <a href="{{ url_for('consumption_interaction.view_media_to_consume') }}" class="btn btn-secondary customButtonSize">View Future Media</a>
+            </div>
+            <div>
+                <a href="{{ url_for('consumption_interaction.view_goals') }}" class="btn btn-secondary customButtonSize">View Goals</a> 
+            </div>
+        
+        </section>
+        <section class="addLinks">
+            <div>
+                <a href="{{ url_for('consumption_interaction.add_new_media') }}" class="btn btn-secondary customButtonSize">Add New Media</a>
+            </div>
+            <div>
+                <a href="{{ url_for('consumption_interaction.view_visualisations') }}" class="btn btn-secondary customButtonSize">Visualise Media Consumption</a>                               
+            </div>
+            <div>
+                <a href="{{ url_for('consumption_interaction.create_goal') }}" class="btn btn-secondary customButtonSize">Create New Goal</a>
+            </div>
+        </section>
+    </div>
+
+    <div class="mediaGoalSection">
+        <section class="firstConsumingMedia">
+            {% if media == None %}
+                    <p style="margin-top: 23%; font-weight: bold;">No Media Being Consumed</p>
+                    <div>
+                        <a href="{{ url_for('consumption_interaction.add_new_media') }}" class="btn btn-secondary customButtonSize">Add New Media</a>
+                    </div>
+            {% else %}
+                <div class="mediaDisplay" id="display_{{ media['media_id'] }}">
+                    <div class="TitAutLen">
+                        <h5>{{ media["title"] }}</h5>
+                        {% if media["type"] == "book" %}
+                        <hr style="margin: 0%;">
+                            <h6>Author(s):</h6>
+                            {% for author in media["author"] %}
+                            {{author}}<br>
+                            {% endfor %}
+                        {% endif %}
+                        <hr style="margin: 0%;">
+
+                        {% if media["type"] == "audiobook" %} 
+                            <hr style="margin: 0%;">
+                            <h6>Author(s):</h6>
+                            {% for author in media["author"] %}
+                                {{author}}<br>
+                            {% endfor %}
+
+                            <hr style="margin: 0%;">
+                            <h6>Narrators:</h6>
+                            {% for narrator in media["narrators"] %}
+                                {{ narrator }}<br>
+                            {% endfor %}
+                        {% endif %}
+                        
+                        {% if media["type"] == "movie" %} 
+                        <h6>Director:</h6>
+                            <p>{{media["director"]}}</p>
+                        <hr style="margin: 0%;">
+                            <h6>Actors:</h6>
+                            {% for actor in media["actors"] %}
+                                {{ actor }}<br>
+                            {% endfor %}
+                        {% endif %}
+                        
+                        {% if media["type"] == "video_game" %}
+                            <h6>Developer:</h6>
+                                <p>{{media["developer"]}}</p>
+                            <hr style="margin: 0%;">
+
+                            <h6>Genres:</h6>
+                            {% for genre in media["genre"] %}
+                                {{genre}}<br>
+                            {% endfor %}
+                        {% endif %}
+
+                        {% if media["type"] == "podcast" %}
+
+                        <h6>Presentors:</h6>
+                            {% for presentor in media["presentor"] %}
+                                {{presentor}}<br>
+                            {% endfor %}
+                        <hr style="margin: 0%;">
+
+                        <h6>Genres:</h6>
+                            {% for genre in media["genre"] %}
+                                {{genre}}<br>
+                            {% endfor %}
+                        {% endif %}
+
+                        {% if media["type"] == "music" %}
+                            <h6>Artist(s):</h6>
+                            {% for artist in media["artist"] %}
+                                {{ artist }} <br>
+                            {% endfor %}
+                            <hr style="margin: 0%;">
+                        {% endif %}
+                        <hr style="margin: 0%;">
+                        {% if media["type"] == "video_game" or media["type"] == "podcast" %}
+                        {% else %}
+                        <h6>Length:</h6>
+                        {% if media["type"] == "book" %}
+                            <p>{{media["length"]}} Pages</p>
+                        {% else %}
+                            <p>{{media["length"]}}</p>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                    <div class="description">
+                        <h5>Description:</h5>
+
+                        <div class="desc_content">
+                            {{ media["description"] }}
+                            {{ media["finished"]["date"]}}
+                        </div>
+                        <div class="tagmoredit">
+                            <section class="tagsDisp">
+                                Tags:
+                                {% for t in media["tags"] %}
+                                    {{t}};
+                                {% endfor %}
+                            </section>
+                            <hr style="margin: 0%;">
+                            <div class="showMoreEdit">
+                                <a href="{{ url_for('consumption_interaction.view_specific_media',media_folder='consuming', media_id=media['media_id']) }}">  <button class="btn btn-info">Show More</button>  </a>
+                                <a href="{{ url_for('consumption_interaction.edit_media',media_folder='consuming', media_id=media['media_id']) }}"><button class="btn btn-warning" id="post_button" type="button" name="button">Edit</button></a> 
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </section>
+
+        <section class="firstCurrentGoal">
+            {% if goal == None %}
+                <p style="margin-top: 23%; font-weight: bold;">No Goals Currently Active</p>
+                <div>
+                    <a href="{{ url_for('consumption_interaction.create_goal') }}" class="btn btn-secondary customButtonSize">Create New Goal</a>
+                </div>
+            {% else %}
+            <div class="mediaDisplayGoal">
+                <div class="TitAutLen">
+                    <h5>{{ goal["title"] }}</h5>
+                    <hr>
+                    <h5>Goal Type:</h5>
+                        {% if goal["media_type"] == "book" %} 
+
+                            {% if goal["goal_type"] == "num_books" %}
+
+                                Number of Books Read
+                        
+                            {% elif goal["goal_type"] == "num_pages" %}
+
+                                Number of Pages Read
+
+                            {% endif %}
+
+                        {% elif goal["media_type"] == "movie" %}
+
+                            {% if goal["goal_type"] == "num_hours" %}
+
+                                Duration of Movies Watched
+
+                            {% elif goal["goal_type"] == "num_films" %}
+
+                                Number of Movies Watched
+                            
+                            {% endif %}
+
+                        {% elif goal["media_type"] == "audiobook" %}
+
+                            {% if goal["goal_type"] == "num_books" %}
+
+                                Number of Audiobooks Finished
+
+                            {% elif goal["goal_type"] == "num_hours" %}
+
+                                Duration of Audiobooks Finished
+
+                            {% endif %}
+                        
+                        {% elif goal["media_type"] == "video_game" %}
+
+                            {% if goal["goal_type"] == "num_games" %}
+
+                                Number of Games Finished
+
+                            {% endif %}
+
+                        {% endif %}
+
+                        <hr>
+                    <h5>Progress:</h5>
+                        {% if goal["goal_type"] == "num_hours" %}
+                            {{ goal["progress"]["hours"]}}h {{ goal["progress"]["minutes"] }}m / {{ goal["quantity"]["hours"]}}h
+
+                                {% if goal["progress"]["hours"] | int >= goal["quantity"]["hours"] | int %}
+                                    <br>Yay! Goal Complete!
+                                {% endif %}
+
+                        {% elif goal["goal_type"] == "num_pages" %}
+
+                            {{ goal["progress"]}} / {{ goal["quantity"]}} Pages
+
+                                {% if goal["progress"] | int >= goal["quantity"] | int %}
+
+                                    <br>Yay! Goal Complete!
+
+                                {% endif %}
+
+                        {% elif goal["goal_type"] == "num_books" %}
+
+                            {{ goal["progress"]}} / {{ goal["quantity"]}} Books
+
+                                {% if goal["progress"] | int >= goal["quantity"] | int %}
+
+                                    <br>Yay! Goal Complete!
+
+                                {% endif %}
+
+                        {% elif goal["goal_type"] == "num_films" %}
+
+                            {{ goal["progress"]}} / {{ goal["quantity"]}} Films
+
+                                {% if goal["progress"] | int >= goal["quantity"] | int %}
+
+                                    <br>Yay! Goal Complete!
+
+                                {% endif %}
+                        
+                        {% elif goal["goal_type"] == "num_games" %}
+
+                            {{ goal["progress"]}} / {{ goal["quantity"]}} Games
+
+                                {% if goal["progress"] | int >= goal["quantity"] | int %}
+
+                                    <br>Yay! Goal Complete!
+
+                                {% endif %}
+
+                        {% endif %}
+
+                </div>
+                <div class="description">
+                    <div class="desc_content">
+                    <h5>Included Media:</h5>
+                        {% for i in goal["media_ids"] %}
+                            {% for j in consumed["media"] %}
+                                {% if i == j["media_id"] %}
+                                    {{j["title"]}} &nbsp;:&nbsp; {{j["length"]}} Pages &nbsp; <br>
+                                    {% for aut in j["author"] %} 
+                                        {{aut}} 
+                                    {% endfor %}
+                                    &nbsp; &nbsp; &nbsp; Finished: &nbsp; {{j["events"]["events"][0]["date"]}}
+                                {% endif %}
+                            {% endfor %}
+                            <hr style="margin: 0%;">
+                        {% endfor %}
+                    </div>
+                        <div class="showMoreEdit" style="border-top: 1px solid black">
+                            <a href="{{ url_for('consumption_interaction.view_specific_goal', goal_id=goal['goal_id']) }}"><button class="btn btn-info" id="post_button" type="button" name="button">Show Details</button></a>
+                            <a href="{{ url_for('consumption_interaction.edit_goal', goal_id=goal['goal_id']) }}"><button class="btn btn-warning" id="post_button" type="button" name="button">Edit</button></a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </section>
+    </div>
+</div>
+
+
+{% endblock %}

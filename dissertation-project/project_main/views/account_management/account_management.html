@@ -1,0 +1,17 @@
+<!-- Page provides users with links to features to update account. -->
+
+{% extends 'base.html' %}
+{% block content %}
+
+<div id="account_management">
+    <h1>Account Management</h1>
+    <a style="margin-top: 5px;" class="btn btn-primary" href="{{ url_for('account_management.change_password') }}">Change Password</a> <br>
+    <a style="margin-top: 5px;" class="btn btn-primary" href="{{ url_for('account_management.delete_account') }}">Delete Account</a> <br>
+    <a style="margin-top: 5px;" class="btn btn-primary" href="{{ url_for('account_management.update_media_types') }}">Update Media Types</a>
+
+</div>
+
+
+<div>
+</div>
+{% endblock %}

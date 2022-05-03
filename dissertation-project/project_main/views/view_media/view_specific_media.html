@@ -1,0 +1,191 @@
+<!-- Page enables users to view specific pieces of media, giving them access to events, the move, and deletion functions. -->
+
+{% extends 'base.html' %}
+{% block content %}
+
+<section class="view_media">
+    <div class="details_block">
+        <!-- Container for Title, (Author, actor, director etc) and length/duration -->
+        <h6>Title:</h6>
+        <p>{{ media["title"] }}</p>
+        {% if media["type"] == "book" %}
+        <hr style="margin: 0%;">
+            <h6>Author(s):</h6>
+            {% for author in media["author"] %}
+            {{author}}<br>
+            {% endfor %}
+        {% endif %}
+        <hr style="margin: 0%;">
+
+        {% if media["type"] == "audiobook" %} 
+            <hr style="margin: 0%;">
+            <h6>Author(s):</h6>
+            {% for author in media["author"] %}
+                {{author}}<br>
+            {% endfor %}
+
+            <hr style="margin: 0%;">
+            <h6>Narrators:</h6>
+            {% for narrator in media["narrators"] %}
+                {{ narrator }}<br>
+            {% endfor %}
+        {% endif %}
+        
+        {% if media["type"] == "movie" %} 
+        <h6>Director:</h6>
+            <p>{{media["director"]}}</p>
+        <hr style="margin: 0%;">
+            <h6>Actors:</h6>
+            {% for actor in media["actors"] %}
+                {{ actor }}<br>
+            {% endfor %}
+        {% endif %}
+        
+        {% if media["type"] == "video_game" %}
+            <h6>Developer:</h6>
+                <p>{{media["developer"]}}</p>
+            <hr style="margin: 0%;">
+
+            <h6>Genres:</h6>
+            {% for genre in media["genre"] %}
+                {{genre}}<br>
+            {% endfor %}
+        {% endif %}
+
+        {% if media["type"] == "podcast" %}
+
+        <h6>Presentors:</h6>
+            {% for presentor in media["presentor"] %}
+                {{presentor}}<br>
+            {% endfor %}
+        <hr style="margin: 0%;">
+
+        <h6>Genres:</h6>
+            {% for genre in media["genre"] %}
+                {{genre}}<br>
+            {% endfor %}
+        {% endif %}
+
+        {% if media["type"] == "music" %}
+            <h6>Artist(s):</h6>
+            {% for artist in media["artist"] %}
+                {{ artist }} <br>
+            {% endfor %}
+            <hr style="margin: 0%;">
+        {% endif %}
+        <!-- Length -->
+        <hr style="margin: 0%;">
+        {% if media["type"] == "video_game" or media["type"] == "podcast" %}
+        {% else %}
+        <h6>Length:</h6>
+        {% if media["type"] == "book" %}
+            <p>{{media["length"]}} Pages</p>
+        {% else %}
+            <p>{{media["length"]}}</p>
+        {% endif %}
+        {% endif %}
+        <hr style="margin: 0%;">
+        <p>Tags:</p>
+        <div class="tagsDisp">
+        {% for tag in media["tags"] %}
+            {{tag}};
+        {% endfor %}
+        <hr style="margin: 0%;">
+            <div class="edit_del_btn" style="margin: auto;">
+                {% if media_folder == "consumed" %}
+                <a href="{{ url_for('consumption_interaction.add_event',media_folder='consumed', media_id=media['media_id']) }}"><button style="margin-top: 5px;" class="btn btn-primary btn-sm" id="post_button" type="button" name="button">Add Event</button></a>
+                <a href="{{ url_for('consumption_interaction.edit_media',media_folder='consumed', media_id=media['media_id']) }}"><button style="margin-top: 5px;" class="btn btn-warning btn-sm" id="post_button" type="button" name="button">Edit Media</button></a>
+                <a href="{{ url_for('consumption_interaction.delete_media_action',media_folder='consumed', media_index=media['media_id']) }}" onclick="return confirm('Are You Sure?')"><button style="margin-top: 5px;" class="btn btn-danger btn-sm" id="post_button" type="button" name="button">Delete Media</button></a>
+                {% elif media_folder == "consuming" %}
+                <a href="{{ url_for('consumption_interaction.add_event',media_folder='consuming', media_id=media['media_id']) }}"><button style="margin-top: 5px;" class="btn btn-primary btn-sm" id="post_button" type="button" name="button">Add Event</button></a>
+                <a href="{{ url_for('consumption_interaction.edit_media',media_folder='consuming', media_id=media['media_id']) }}"><button style="margin-top: 5px;" class="btn btn-warning btn-sm" id="post_button" type="button" name="button">Edit Media</button></a>
+                <a href="{{ url_for('consumption_interaction.delete_media_action',media_folder='consuming', media_index=media['media_id']) }}" onclick="return confirm('Are You Sure?')"><button style="margin-top: 5px;" class="btn btn-danger btn-sm" id="post_button" type="button" name="button">Delete Media</button></a>
+                {% elif media_folder == "to_consume" %} 
+                <a href="{{ url_for('consumption_interaction.add_event',media_folder='to_consume', media_id=media['media_id']) }}"><button style="margin-top: 5px;" class="btn btn-primary btn-sm" id="post_button" type="button" name="button">Add Event</button></a>
+                <a href="{{ url_for('consumption_interaction.edit_media',media_folder='to_consume', media_id=media['media_id']) }}"><button style="margin-top: 5px;" class="btn btn-warning btn-sm" id="post_button" type="button" name="button">Edit Media</button></a>
+                <a href="{{ url_for('consumption_interaction.delete_media_action',media_folder='to_consume', media_index=media['media_id']) }}" onclick="return confirm('Are You Sure?')"><button style="margin-top: 5px;" class="btn btn-danger btn-sm" id="post_button" type="button" name="button">Delete Media</button></a>
+                </div>
+                {% endif %}
+            </div>
+            <br>
+            <hr style="margin: 0%;">
+
+            <form method="POST">
+                <label for="new_media_folder">Choose New Media Folder:</label>
+                <select class="form-control" name="new_media_folder" id="new_media_folder">
+                    {% if media_folder == "consumed" %}
+                        <option value="to_consume">To Consume</option>
+                        <option value="consuming">Consuming</option>
+                    {% elif media_folder == "consuming" %}
+                        <option value="to_consume">To Consume</option>
+                        <option value="consumed">Consumed</option>
+                    {% elif media_folder == "to_consume" %}
+                        <option value="consumed">Consumed</option>
+                        <option value="consuming">Consuming</option>
+                    {% endif %}
+                </select>
+
+                <input class="btn btn-success btn-sm" type="submit" name="submit" id="submit" value="Move Media" style="margin-top: 5px;">
+            </form>
+        </div>
+    </div>
+        <div class="desc_events_block">
+            <!-- Continer for top elements (all but events) -->
+            <div class="desc_block">
+                <!-- Container for description and tag_block -->
+                <p id="spec_desc">{{ media["description"]}}</p>
+                
+            </div>
+            <div class="events">
+                <!-- Container for evetns -->
+                {% for event in media["events"]["events"] %}
+                    <div class="event_block" style="border-right:1px solid black; padding: 5px;">
+                        <h5>{{event["date"]}}</h5>
+
+                        {% if media["type"] == "book" %}
+                            <p>{{event["progress"]}} / {{media["length"]}} Pages</p>
+                        {% elif media["type"] == "movie" %}
+                            <p>{{event["progress"]}} / {{media["length"]}}</p>
+                        {% elif media["type"] == "audio_book" %}
+                            <p>{{event["progress"]}} / {{media["length"]}}</p>
+                        {% endif %}
+                        <p>{{event["rating"]}} / 5</p>
+                        {{event["status"]}}
+                        <div class="event_review">{{event["review"]}}</div>
+                        <div>
+                            {% if media_folder == "consumed" %}
+                                <a href="{{ url_for('consumption_interaction.edit_event',media_folder='consumed', media_id=media['media_id'], event_id=event['event_id']) }}"><button style="margin-top: 5px;" class="btn btn-warning btn-sm" id="post_button" type="button" name="button">Edit Event</button></a>
+                                <a href="{{ url_for('consumption_interaction.delete_event_action',media_folder='consumed', media_id=media['media_id'], event_id=event['event_id']) }}" onclick="return confirm('Are You Sure?')"><button style="margin-top: 5px;" class="btn btn-danger btn-sm" id="post_button" type="button" name="button">Delete Event</button></a>
+                                {% elif media_folder == "consuming" %}
+                                <a href="{{ url_for('consumption_interaction.edit_event',media_folder='consuming', media_id=media['media_id'], event_id=event['event_id']) }}"><button style="margin-top: 5px;" class="btn btn-warning btn-sm" id="post_button" type="button" name="button">Edit Event</button></a>
+                                <a href="{{ url_for('consumption_interaction.delete_event_action',media_folder='consuming', media_id=media['media_id'], event_id=event['event_id']) }}" onclick="return confirm('Are You Sure?')"><button style="margin-top: 5px;" class="btn btn-danger btn-sm" id="post_button" type="button" name="button">Delete Event</button></a>
+                                {% elif media_folder == "to_consume" %}
+                                <a href="{{ url_for('consumption_interaction.edit_event',media_folder='to_consume', media_id=media['media_id'], event_id=event['event_id']) }}"><button style="margin-top: 5px;" class="btn btn-warning btn-sm" id="post_button" type="button" name="button">Edit Event </button></a>
+                                <a href="{{ url_for('consumption_interaction.delete_event_action',media_folder='to_consume', media_id=media['media_id'], event_id=event['event_id']) }}" onclick="return confirm('Are You Sure?')"><button style="margin-top: 5px;" class="btn btn-danger btn-sm" id="post_button" type="button" name="button">Delete Event</button></a>
+                            {% endif %}
+                        </div>
+                    </div>                    
+                {% endfor %}
+
+            </div>
+            
+        </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+
+    <script>
+
+        function confirm_delete() {
+            if (confirm("Are You Sure?")) {
+                return true
+            } else {
+                return false
+            }
+        }
+
+    </script>
+
+
+{% endblock %}

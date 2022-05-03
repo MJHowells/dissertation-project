@@ -1,0 +1,66 @@
+<!-- Page enables users to delete their account. -->
+
+{% extends 'base.html' %}
+{% block content %}
+
+<form name="delete_form" id="delete_acc_form" method="POST">
+    <h1>Delete Account</h1>
+    {{ form.hidden_tag() }}
+    <p>
+        {{form.email.label}} <br>
+        {{form.email(size=32)}}
+        {% for error in form.email.errors %} <br>
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p>
+        {{form.password.label}} <br>
+        {{form.password(size=32)}} <br>
+        {% for error in form.password.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p>
+        {{form.confirm_password.label}} <br>
+        {{form.confirm_password(size=32)}} <br>
+        {% for error in form.confirm_password.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <div>
+        <p style="margin: 0%;">{{form.confirm_deletion()}} {{form.confirm_deletion.label}}</p>
+        <p id="confirm_error" style="margin: 0px;  color: red;" hidden></p>
+    </div>
+    {{form.submit}}
+    
+</form>
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+    document.getElementById("email").setAttribute("class", "form-control")
+    document.getElementById("password").setAttribute("class", "form-control")
+    document.getElementById("confirm_password").setAttribute("class", "form-control")
+    document.getElementById("submit").setAttribute("class", "btn btn-success")
+
+
+    document.getElementById("confirm_deletion").setAttribute("onclick", "validate()")
+    document.getElementById("submit").setAttribute("disabled", true)
+    document.getElementById("submit").setAttribute("onclick", "return confirm('Are you sure you want to delete your account? It will not be recoverable.')")
+    validate()
+    function validate() {
+        check_radio = document.querySelector('input[name="confirm_deletion"]:checked')
+        if (check_radio != null) {
+            document.getElementById("confirm_error").hidden = true
+            document.getElementById("submit").removeAttribute("disabled")
+        } else {
+            document.getElementById("confirm_error").hidden = false
+            document.getElementById("confirm_error").innerHTML = "[ Confirm Checkbox must be Checked in order to delete your account. ]"
+            document.getElementById("submit").setAttribute('disabled', true)
+        }
+    }
+    
+</script>
+
+{% endblock %}

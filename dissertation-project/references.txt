@@ -1,0 +1,16 @@
+
+Form Tabs:
+Adapted from w3schools post "How To - Tabs" by w3schools, date (unknown)
+Accessed 03-08-2021
+Available at: https://www.w3schools.com/howto/howto_js_tabs.asp
+Code adapted in files:
+"add_new_media"
+"edit_media"
+"create_goal"
+"edit_goal"
+"add_event"
+"add_goal"
+
+(NOTE: Code from this page was used in several places throughout the application to add tabs to forms.
+If a part of the application has a form which has tabs, please assume that this page used code adapted 
+from this source. )

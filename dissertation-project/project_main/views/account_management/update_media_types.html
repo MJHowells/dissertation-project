@@ -1,0 +1,60 @@
+<!-- Page enables users to update their media type selection (made on account creation) -->
+
+{% extends 'base.html' %}
+{% block content %}
+
+<form id="edit_media_types" action="" method="POST">
+    <h1>Update Media Types</h1>
+
+    <div>
+        <p>What types of media would you like to record?</p>
+        {% if "movie" in current_media_types %}
+            <input type="checkbox" name="media_type" value="movie" checked>Movies<br>
+        {% else %}
+            <input type="checkbox" name="media_type" value="movie">Movies<br>
+        {% endif %}
+        {% if "book" in current_media_types %}
+            <input type="checkbox" name="media_type" value="book" checked>Books<br>
+        {% else %}
+            <input type="checkbox" name="media_type" value="book">Books<br>
+        {% endif %}
+        {% if "audiobook" in current_media_types %}
+            <input type="checkbox" name="media_type" value="audiobook" checked>Audio Books<br>
+        {% else %}
+            <input type="checkbox" name="media_type" value="audiobook">Audio Books<br>
+        {% endif %}
+        {% if "video_game" in current_media_types %}
+            <input type="checkbox" name="media_type" value="video_game" checked>Video Games<br>
+        {% else %}
+            <input type="checkbox" name="media_type" value="video_game">Video Games<br>
+        {% endif %}
+        
+    </div>
+    <input class="btn btn-success" type="button" id="btnSubmit" name="btnSubmit" value="Update">
+
+</form>
+
+<div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+    <script>
+
+        document.getElementById("btnSubmit").addEventListener("click", function() {
+            check_confirm = document.querySelectorAll("[name='media_type']:checked")
+
+            if (check_confirm.length === 0) {
+                alert("Please choose at least one type of media to record in this application")
+                return false
+            } else {
+                document.getElementById("edit_media_types").submit()
+                return false;
+            }
+        }, false);
+
+
+    </script>
+
+{% endblock %}

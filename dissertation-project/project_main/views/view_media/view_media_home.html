@@ -1,0 +1,18 @@
+<!-- REDUNDANT PAGE. Provided users with links to view media pages. -->
+
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="">
+    <section id="main_tab" class="status_selection">
+        <a href="{{ url_for('consumption_interaction.view_media_consumed') }}" class="btn btn-secondary">Consumed</a>
+        <a href="{{ url_for('consumption_interaction.view_media_consuming') }}" class="btn btn-secondary">Consuming</a>
+        <a href="{{ url_for('consumption_interaction.view_media_to_consume') }}" class="btn btn-secondary">To Consume</a>
+    </section>
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}
