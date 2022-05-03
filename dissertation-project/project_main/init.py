@@ -4,10 +4,9 @@ from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__, template_folder='views', static_url_path='/', static_folder='resources')
-# UPDATE SECRET KEY LATER TO BE MORE SECURE.
-app.config['SECRET_KEY'] = 'f059cb01f09a4e2af642dfc0d5d64589f7ee87714659abc466ba397f549aef88'
+app.config['SECRET_KEY'] = None #Removed for public commit (No longer active)
 # app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI')
-app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+pymysql://c2106366:KEy39JWC9Ze4TYZH@csmysql.cs.cf.ac.uk:3306/c2106366_dissertation"
+app.config['SQLALCHEMY_DATABASE_URI'] = None #Removed for public commit (No longer active)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 login_manager = LoginManager()
